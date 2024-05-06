@@ -10,10 +10,8 @@ int main(void) {
 
     SetTargetFPS(60);
 
-    Shader shader = LoadShader(0, "src/shader.glsl");
-    int resolution_location = GetShaderLocation(shader, "resolution");
-    int view_eye_location = GetShaderLocation(shader, "view_eye");
-    int view_center_location = GetShaderLocation(shader, "view_center");
+    DynShader shader;
+    shader.shader = LoadShader(0, "src/shader.glsl");
 
     Camera camera = {
         .position   = (Vector3) {10.0f, 10.0f, 10.0f},
@@ -41,32 +39,21 @@ int main(void) {
         // keybinds
         if(IsKeyPressed(KEY_SPACE)) {
             DA_push(&objects, &obj);
-            // object_map(&obj, "src/shader.glsl");
+            shader = object_map(&obj, "src/shader.glsl");
         }
 
         BeginDrawing();
         ClearBackground(BLACK);
 
         // main shader
-        BeginShaderMode(shader);
+        BeginShaderMode(shader.shader);
             DrawRectangle(SIDEBAR_WIDTH, 0,
                 GetScreenWidth() - SIDEBAR_WIDTH, GetScreenHeight(),
                 RAYWHITE
             );
         EndShaderMode();
 
-        SetShaderValue(shader, resolution_location,
-            (float[2]){(float)GetScreenWidth(), (float)GetScreenHeight()},
-            SHADER_UNIFORM_VEC2
-        );
-        SetShaderValue(shader, view_eye_location,
-            &camera.position,
-            SHADER_UNIFORM_VEC3
-        );
-        SetShaderValue(shader, view_center_location,
-            &camera.target,
-            SHADER_UNIFORM_VEC3
-        );
+        update_shader_locations(&shader, camera);
 
         DrawRectangle(0, 0, SIDEBAR_WIDTH, GetScreenHeight(), GRAY);
 

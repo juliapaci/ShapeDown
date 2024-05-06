@@ -6,6 +6,13 @@
 #include <stdlib.h>
 
 typedef struct {
+    Shader shader;
+    int resolution;
+    int view_center;
+    int view_eye;
+} DynShader;
+
+typedef struct {
     Vector3 position;
     Vector3 size;
     Vector3 angle;
@@ -24,7 +31,12 @@ typedef struct {
     bool subtract;
 } Object;
 
-void object_map(Object *obj, const char *path); // append object to shader ray march map
+// updates DynShader with proper uniform locations
+void update_shader_locations(DynShader *shader, Camera camera);
+
+void _append(char **str1, const char *str2);
+char *_read_file(const char *file_path);
+DynShader object_map(Object *obj, const char *path); // append object to shader ray march map
 
 // Dynamic Array
 typedef struct {
