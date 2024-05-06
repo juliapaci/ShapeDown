@@ -24,6 +24,8 @@ typedef struct {
     bool subtract;
 } Object;
 
+void object_map(Object *obj, const char *path); // append object to shader ray march map
+
 // Dynamic Array
 typedef struct {
     size_t amount;

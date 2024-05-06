@@ -1,5 +1,4 @@
 // great video on ray marching: https://www.youtube.com/watch?v=TSAIR03FPfY
-// distance functions: https://iquilezles.org/articles/distfunctions/
 #version 330
 
 // Input vertex attributes (from vertex shader)
@@ -17,18 +16,25 @@ const float MAX_RAY_DIST = 64.0;
 const float MAX_STEPS    = 128.0;
 const float MIN_SDF_DIST = 0.001;
 
-float sdf_sphere(vec3 point, vec3 center, float radius) {
-    return length(point - center) - radius;
+// https://iquilezles.org/articles/distfunctions/
+float sdf_round_box(vec3 p, vec3 b, float r) {
+    vec3 q = abs(p) - b + r;
+    return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0) - r;
 }
 
 float map(vec3 point) {
     vec3 center = vec3(0.0);
     float radius = 0.5;
 
-    // example objects until we dynamically populate
-    float sphere = sdf_sphere(point, center, radius);
+    vec3 pos = vec3(0.0, 10.0, 0.0);
 
-    return sphere;
+    float distance = MAX_RAY_DIST;
+
+    // example objects until we dynamically populate
+    distance = min(sdf_round_box(point, vec3(1.0), radius), distance);
+    distance = min(sdf_round_box(point - vec3(pos), vec3(1.0), radius), distance);
+
+    return distance;
 }
 
 // marches a ray in direction until hit

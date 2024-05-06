@@ -11,6 +11,9 @@ int main(void) {
     SetTargetFPS(60);
 
     Shader shader = LoadShader(0, "src/shader.glsl");
+    int resolution_location = GetShaderLocation(shader, "resolution");
+    int view_eye_location = GetShaderLocation(shader, "view_eye");
+    int view_center_location = GetShaderLocation(shader, "view_center");
 
     Camera camera = {
         .position   = (Vector3) {10.0f, 10.0f, 10.0f},
@@ -21,6 +24,7 @@ int main(void) {
 
     Object obj = {0};
     obj.size = (Vector3){2.0f, 2.0f, 2.0f};
+    object_map(&obj, "src/shader.glsl");
 
     DA objects;
     DA_init(&objects, 100);
@@ -32,11 +36,13 @@ int main(void) {
             if(IsCursorHidden()) EnableCursor();
             else DisableCursor();
         }
-        if(IsCursorHidden()) UpdateCamera(&camera, CAMERA_FIRST_PERSON);
+        if(IsCursorHidden()) UpdateCamera(&camera, CAMERA_FREE);
 
         // keybinds
-        if(IsKeyPressed(KEY_SPACE))
+        if(IsKeyPressed(KEY_SPACE)) {
             DA_push(&objects, &obj);
+            // object_map(&obj, "src/shader.glsl");
+        }
 
         BeginDrawing();
         ClearBackground(BLACK);
@@ -49,31 +55,18 @@ int main(void) {
             );
         EndShaderMode();
 
-        SetShaderValue(shader, GetShaderLocation(shader, "resolution"),
+        SetShaderValue(shader, resolution_location,
             (float[2]){(float)GetScreenWidth(), (float)GetScreenHeight()},
             SHADER_UNIFORM_VEC2
         );
-        SetShaderValue(shader, GetShaderLocation(shader, "view_eye"),
+        SetShaderValue(shader, view_eye_location,
             &camera.position,
             SHADER_UNIFORM_VEC3
         );
-        SetShaderValue(shader, GetShaderLocation(shader, "view_center"),
+        SetShaderValue(shader, view_center_location,
             &camera.target,
             SHADER_UNIFORM_VEC3
         );
-
-        BeginMode3D(camera);
-            // for(size_t i = 0; i < objects.amount; i++) {
-            //     Object obj = objects.array[i];
-            //     DrawCube(obj.position,
-            //         obj.size.x,
-            //         obj.size.y,
-            //         obj.size.z,
-            //         GRAY
-            //     );
-            // }
-            DrawGrid(10, 1.0);
-        EndMode3D();
 
         DrawRectangle(0, 0, SIDEBAR_WIDTH, GetScreenHeight(), GRAY);
 
