@@ -81,11 +81,12 @@ DynShader object_map(Object *obj, const char *path) {
     _append(&prelude, block);
     _append(&prelude, map_end);
 
-    DynShader shader;
-    shader.shader = LoadShaderFromMemory(0, prelude);
-    shader.resolution = GetShaderLocation(shader.shader, "resolution");
-    shader.view_eye = GetShaderLocation(shader.shader, "view_eye");
-    shader.view_center = GetShaderLocation(shader.shader, "view_center");
+    DynShader shader = {
+        .shader       = LoadShaderFromMemory(0, prelude),
+        .resolution   = GetShaderLocation(shader.shader, "resolution"),
+        .view_eye     = GetShaderLocation(shader.shader, "view_eye"),
+        .view_center  = GetShaderLocation(shader.shader, "view_center")
+    };
 
     return shader;
 }
@@ -98,7 +99,7 @@ void DA_init(DA *da, size_t size) {
 }
 
 void DA_push(DA *da, Object *obj) {
-    if(++da->amount > da->capacity) {
+    if(++da->amount >= da->capacity) {
         da->capacity += da->amount;
         da->array = realloc(da->array, da->capacity * sizeof(Object));
     }
