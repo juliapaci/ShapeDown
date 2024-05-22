@@ -1,8 +1,12 @@
 #include <raylib.h>
+#include <raymath.h>
 
 #include "object.h"
+#include "helper.h"
 
+#define DEBUG_SELECTED 0
 #define SIDEBAR_WIDTH 300
+#define SELECTED 0
 
 int main(void) {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
@@ -25,9 +29,10 @@ int main(void) {
     object_map(&obj, "src/shader.glsl");
 
     DA objects;
-    DA_init(&objects, 100);
+    DA_init(&objects, 50);
     DA_push(&objects, &obj);
 
+    Ray ray = {0};
     while(!WindowShouldClose()) {
         // camera
         if(IsKeyPressed(KEY_LEFT_CONTROL)) {
@@ -42,20 +47,36 @@ int main(void) {
             shader = object_map(&obj, "src/shader.glsl");
         }
 
+        if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            ray = GetMouseRay(GetMousePosition(), camera);
+        }
+
         BeginDrawing();
-        ClearBackground(BLACK);
+            ClearBackground(BLACK);
 
-        // main shader
-        BeginShaderMode(shader.shader);
-            DrawRectangle(SIDEBAR_WIDTH, 0,
-                GetScreenWidth() - SIDEBAR_WIDTH, GetScreenHeight(),
-                RAYWHITE
-            );
-        EndShaderMode();
+            // main shader
+            BeginShaderMode(shader.shader);
+                DrawRectangle(SIDEBAR_WIDTH, 0,
+                    GetScreenWidth() - SIDEBAR_WIDTH, GetScreenHeight(),
+                    RAYWHITE
+                );
+            EndShaderMode();
 
-        update_shader_locations(&shader, camera);
+            update_shader_locations(&shader, camera);
 
-        DrawRectangle(0, 0, SIDEBAR_WIDTH, GetScreenHeight(), GRAY);
+            // sphere col
+            if(GetRayCollisionBox(ray, boundingBox_sized(Vector3Add(objects.array[DEBUG_SELECTED].position,
+                            (Vector3){objects.array[DEBUG_SELECTED].size.x,0,0}), 0.2)).hit) {
+                DrawText("HIT", 1000, 100, 100, BLUE);
+            } else {
+                DrawText("HIT", 1000, 100, 100, RED);
+            }
+            BeginMode3D(camera);
+                DrawRay(ray, WHITE);
+                DrawGrid(10, 1.0f);
+            EndMode3D();
+
+            DrawRectangle(0, 0, SIDEBAR_WIDTH, GetScreenHeight(), GRAY);
 
         EndDrawing();
     }
