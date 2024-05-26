@@ -52,7 +52,7 @@ int main(void) {
 
         if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             // ray = GetMouseRay(GetMousePosition(), camera);
-            selected = object_at_pos(GetMousePosition());
+            selected = object_at_pos(GetMousePosition(), &shader);
         }
 
         BeginDrawing();

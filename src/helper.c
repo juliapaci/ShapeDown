@@ -1,5 +1,6 @@
 #include "helper.h"
 #include <raymath.h>
+#include <rlgl.h>
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
@@ -89,7 +90,32 @@ DynShader object_map(DA *da) {
     return shader;
 }
 
-size_t object_at_pos(Vector2 pos) {
-    // object_map();
-    return -1;
+size_t object_at_pos(Vector2 pos, DynShader *shader) {
+    RenderTexture2D target = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
+
+    BeginTextureMode(target);
+        BeginShaderMode(shader->shader);
+            rlBegin(RL_QUADS);
+            rlTexCoord2f(pos.x-1, pos.y-1);
+            rlVertex2f(pos.x-1, pos.y-1);
+
+            rlTexCoord2f(pos.x-1, pos.y+1);
+            rlVertex2f(pos.x-1, pos.y+1);
+
+            rlTexCoord2f(pos.x+1, pos.y+1);
+            rlVertex2f(pos.x+1, pos.y+1);
+
+            rlTexCoord2f(pos.x+1, pos.y-1);
+            rlVertex2f(pos.x+1, pos.y-1);
+            rlEnd();
+        EndShaderMode();
+    EndTextureMode();
+
+    uint8_t *pixels = rlReadTexturePixels(target.texture.id, target.texture.width, target.texture.height, target.texture.format);
+    int object_index = pixels[(int)(pos.x + target.texture.width*(target.texture.height - pos.y))*4] - 1;
+
+    free(pixels);
+    UnloadRenderTexture(target);
+
+    return object_index;
 }
