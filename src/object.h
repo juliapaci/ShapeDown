@@ -12,12 +12,15 @@ typedef struct {
     int view_eye;
 } DynShader;
 
+// updates DynShader with proper uniform locations
+void update_shader_locations(DynShader *shader, Camera camera);
+
 typedef struct {
     Vector3 position;
     Vector3 size;
     Vector3 angle;
 
-    float roundedness;
+    float radius;
     float blobbyness;
 
     struct {
@@ -30,13 +33,6 @@ typedef struct {
 
     bool subtract;
 } Object;
-
-// updates DynShader with proper uniform locations
-void update_shader_locations(DynShader *shader, Camera camera);
-
-void _append(char **str1, const char *str2);
-char *_read_file(const char *file_path);
-DynShader object_map(Object *obj, const char *path); // append object to shader ray march map
 
 // Dynamic Array
 typedef struct {

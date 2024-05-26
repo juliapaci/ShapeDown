@@ -4,7 +4,6 @@
 #include "object.h"
 #include "helper.h"
 
-#define DEBUG_SELECTED 0
 #define SIDEBAR_WIDTH 300
 #define SELECTED 0
 
@@ -26,11 +25,15 @@ int main(void) {
 
     Object obj = {0};
     obj.size = (Vector3){2.0f, 2.0f, 2.0f};
-    object_map(&obj, "src/shader.glsl");
 
     DA objects;
     DA_init(&objects, 50);
     DA_push(&objects, &obj);
+
+    object_map(&objects);
+
+    // TODO: a state struct which contains selected, object da, etc.
+    size_t selected = -1;
 
     Ray ray = {0};
     while(!WindowShouldClose()) {
@@ -44,11 +47,12 @@ int main(void) {
         // keybinds
         if(IsKeyPressed(KEY_SPACE)) {
             DA_push(&objects, &obj);
-            shader = object_map(&obj, "src/shader.glsl");
+            shader = object_map(&objects);
         }
 
         if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            ray = GetMouseRay(GetMousePosition(), camera);
+            // ray = GetMouseRay(GetMousePosition(), camera);
+            selected = object_at_pos(GetMousePosition());
         }
 
         BeginDrawing();
@@ -64,13 +68,7 @@ int main(void) {
 
             update_shader_locations(&shader, camera);
 
-            // sphere col
-            if(GetRayCollisionBox(ray, boundingBox_sized(Vector3Add(objects.array[DEBUG_SELECTED].position,
-                            (Vector3){objects.array[DEBUG_SELECTED].size.x,0,0}), 0.2)).hit) {
-                DrawText("HIT", 1000, 100, 100, BLUE);
-            } else {
-                DrawText("HIT", 1000, 100, 100, RED);
-            }
+            DrawText(TextFormat("%ld", selected), 1000, 100, 100, BLUE);
             BeginMode3D(camera);
                 DrawRay(ray, WHITE);
                 DrawGrid(10, 1.0f);
