@@ -50,6 +50,7 @@ BoundingBox boundingBox_sized(Vector3 center, float size) {
     };
 }
 
+// TODO: dynamic entry with uniforms
 const char *object_map_entry(Object *obj) {
     const char *position = TextFormat("point - vec3(%f, %f, %f)", obj->position.x, obj->position.y, obj->position.z);
     const char *size = TextFormat("vec3(%f, %f, %f)", obj->size.x, obj->size.y, obj->size.z);
@@ -82,6 +83,8 @@ DynShader object_map(DA *da) {
         .view_eye     = GetShaderLocation(shader.shader, "view_eye"),
         .view_center  = GetShaderLocation(shader.shader, "view_center")
     };
+
+    free(prelude);
 
     return shader;
 }
