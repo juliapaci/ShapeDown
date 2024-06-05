@@ -28,7 +28,8 @@ vec3 render(vec3 origin, vec3 direction) {
     vec3 colour = vec3(0.0);
 
     if(dist < MAX_RAY_DIST)
-        colour = vec3(0.4, 0.4, 0.4);
+        colour = vec3(0.4, 0.5, 0.6) +direction.y*0.4;
+        // colour = vec3(0.4, 0.4, 0.4);
 
     return colour;
 }

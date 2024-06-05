@@ -1,5 +1,6 @@
 #include <raylib.h>
 #include <raymath.h>
+#include <string.h>
 
 #include "object.h"
 #include "helper.h"
@@ -25,12 +26,16 @@ int main(void) {
 
     Object obj = {0};
     obj.size = (Vector3){2.0f, 2.0f, 2.0f};
+    // memcpy(&obj.colour, &(struct {uint8_t a,b,c;}){10, 100, 10}, 1);
+    obj.colour.r = 100;
+    obj.colour.b = 100;
+    obj.colour.g = 100;
 
     DA objects;
     DA_init(&objects, 50);
     DA_push(&objects, &obj);
 
-    object_map(&objects);
+    object_map(&objects, 0);
 
     // TODO: a state struct which contains selected, object da, etc.
     size_t selected = -1;
@@ -47,7 +52,7 @@ int main(void) {
         // keybinds
         if(IsKeyPressed(KEY_SPACE)) {
             DA_push(&objects, &obj);
-            shader = object_map(&objects);
+            shader = object_map(&objects, 0);
         }
 
         if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
@@ -75,7 +80,6 @@ int main(void) {
             EndMode3D();
 
             DrawRectangle(0, 0, SIDEBAR_WIDTH, GetScreenHeight(), GRAY);
-
         EndDrawing();
     }
 

@@ -9,6 +9,9 @@ uniform vec3 view_eye;
 uniform vec3 view_center;
 uniform vec2 resolution;
 
+// TODO: maybe only write if we have an object selected?
+uniform vec3 object_props[5];
+
 // Output fragment color
 out vec4 finalColor;
 

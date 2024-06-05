@@ -51,8 +51,7 @@ BoundingBox boundingBox_sized(Vector3 center, float size) {
     };
 }
 
-// TODO: dynamic entry with uniforms
-const char *object_map_entry(Object *obj) {
+const char *object_static_map_entry(Object *obj) {
     const char *position = TextFormat("point - vec3(%f, %f, %f)", obj->position.x, obj->position.y, obj->position.z);
     const char *size = TextFormat("vec3(%f, %f, %f)", obj->size.x, obj->size.y, obj->size.z);
 
@@ -62,7 +61,19 @@ const char *object_map_entry(Object *obj) {
     return block;
 }
 
-DynShader object_map(DA *da) {
+const char *object_dynamic_map_entry(Object *obj) {
+    const char *position = TextFormat("point - vec3(%f, %f, %f)", obj->position.x, obj->position.y, obj->position.z);
+    const char *size = TextFormat("vec3(%f, %f, %f)", obj->size.x, obj->size.y, obj->size.z);
+
+    const char *block = TextFormat("\tdistance = min(\n%s,\n\t\tdistance);\n",
+            TextFormat("\t\tsdf_round_box(\n\t\t\t%s,\n\t\t\t%s,\n\t\t\t%f)", position, size, obj->radius));
+
+    return block;
+}
+
+DynShader object_map(DA *da, size_t selection) {
+    char *map = NULL;
+
     char *prelude = _read_file("src/shader.glsl");
     char *base = _read_file("src/base.glsl");
     const char *sig = "\nfloat map(vec3);\n";
@@ -71,21 +82,26 @@ DynShader object_map(DA *da) {
     const char *map_end = "\treturn distance;\n"
         "}\0";
 
-    _append(&prelude, sig);
-    _append(&prelude, base);
-    _append(&prelude, map_start);
-    for(size_t i = 0; i < da->amount; i++)
-        _append(&prelude, object_map_entry(&da->array[i]));
-    _append(&prelude, map_end);
+    _append(&map, prelude);
+    _append(&map, sig);
+    _append(&map, base);
+    _append(&map, map_start);
+    for(size_t i = 0; i < da->amount; i++) {
+        if(i == selection - 1)
+            _append(&map, object_dynamic_map_entry(&da->array[i]));
+        else
+            _append(&map, object_static_map_entry(&da->array[i]));
+    }
+    _append(&map, map_end);
 
     DynShader shader = {
-        .shader       = LoadShaderFromMemory(0, prelude),
+        .shader       = LoadShaderFromMemory(0, map),
         .resolution   = GetShaderLocation(shader.shader, "resolution"),
         .view_eye     = GetShaderLocation(shader.shader, "view_eye"),
         .view_center  = GetShaderLocation(shader.shader, "view_center")
     };
 
-    free(prelude);
+    free(map);
 
     return shader;
 }
