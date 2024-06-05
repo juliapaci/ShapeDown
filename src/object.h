@@ -10,15 +10,16 @@ typedef struct {
     int resolution;
     int view_center;
     int view_eye;
+    int object_props;
 } DynShader;
 
-// updates DynShader with proper uniform locations
-void update_shader_locations(DynShader *shader, Camera camera);
+// updates uniform values
+void update_shader_uniforms(DynShader *shader, Camera camera);
 
 typedef struct {
     Vector3 position;
     Vector3 size;
-    Vector3 angle;
+    Vector3 rotation;
 
     float radius;
     float blobbyness;

@@ -1,3 +1,5 @@
 ShapeDown is a recreation of Daniel Hooper's "ShapeUp" (https://github.com/danielchasehooper/ShapeUp-public)
 
+ShapeUp-public is pretty messy with its one file, global scope stuff, type of structure. Not that thats bad or anything, just would like to have something more natural (this project).
+
 nobuild (https://github.com/tsoding/nobuild) is used as the build system with GO REBUILD URSELF technology. compile once and use the executable on consecutive uses (read nobuild repo readme for more info)

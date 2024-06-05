@@ -51,6 +51,46 @@ BoundingBox boundingBox_sized(Vector3 center, float size) {
     };
 }
 
+void object_dynamic_assignment(DynShader *shader, Object *obj) {
+    const float properties[3*5] = {
+        obj->position.x,
+        obj->position.y,
+        obj->position.z,
+
+        obj->size.x,
+        obj->size.y,
+        obj->size.z,
+
+        obj->rotation.x,
+        obj->rotation.y,
+        obj->rotation.z,
+
+        // [0..256 - 0..=1]
+        obj->colour.r / 255.0f,
+        obj->colour.g / 255.0f,
+        obj->colour.b / 255.0f,
+
+        // radius, blobbyness, padding
+        fmaxf(0.01,
+            fminf(obj->radius,
+                fminf(obj->size.x,
+                    fminf(obj->size.y, obj->size.z)
+                )
+            )
+        ),
+        fmaxf(obj->blobbyness, 0.0001),
+        0.0f
+    };
+
+    SetShaderValueV(
+        shader->shader,
+        shader->object_props,
+        properties,
+        SHADER_UNIFORM_VEC3,
+        5
+    );
+}
+
 const char *object_static_map_entry(Object *obj) {
     const char *position = TextFormat("point - vec3(%f, %f, %f)", obj->position.x, obj->position.y, obj->position.z);
     const char *size = TextFormat("vec3(%f, %f, %f)", obj->size.x, obj->size.y, obj->size.z);
@@ -62,8 +102,8 @@ const char *object_static_map_entry(Object *obj) {
 }
 
 const char *object_dynamic_map_entry(Object *obj) {
-    const char *position = TextFormat("point - vec3(%f, %f, %f)", obj->position.x, obj->position.y, obj->position.z);
-    const char *size = TextFormat("vec3(%f, %f, %f)", obj->size.x, obj->size.y, obj->size.z);
+    const char *position = "point - object_props[0]";
+    const char *size = "object_props[1]";
 
     const char *block = TextFormat("\tdistance = min(\n%s,\n\t\tdistance);\n",
             TextFormat("\t\tsdf_round_box(\n\t\t\t%s,\n\t\t\t%s,\n\t\t\t%f)", position, size, obj->radius));
@@ -71,7 +111,7 @@ const char *object_dynamic_map_entry(Object *obj) {
     return block;
 }
 
-DynShader object_map(DA *da, size_t selection) {
+DynShader object_map(DA *da, DynShader *shader, size_t selection) {
     char *map = NULL;
 
     char *prelude = _read_file("src/shader.glsl");
@@ -87,23 +127,29 @@ DynShader object_map(DA *da, size_t selection) {
     _append(&map, base);
     _append(&map, map_start);
     for(size_t i = 0; i < da->amount; i++) {
-        if(i == selection - 1)
-            _append(&map, object_dynamic_map_entry(&da->array[i]));
-        else
-            _append(&map, object_static_map_entry(&da->array[i]));
+        const char *entry = NULL;
+
+        if(i == selection) {
+            object_dynamic_assignment(shader, da->array + i);
+            entry = object_dynamic_map_entry(da->array + i);
+        } else
+            entry = object_static_map_entry(da->array + i);
+
+        _append(&map, entry);
     }
     _append(&map, map_end);
 
-    DynShader shader = {
+    DynShader new_shader = {
         .shader       = LoadShaderFromMemory(0, map),
-        .resolution   = GetShaderLocation(shader.shader, "resolution"),
-        .view_eye     = GetShaderLocation(shader.shader, "view_eye"),
-        .view_center  = GetShaderLocation(shader.shader, "view_center")
+        .resolution   = GetShaderLocation(new_shader.shader, "resolution"),
+        .view_eye     = GetShaderLocation(new_shader.shader, "view_eye"),
+        .view_center  = GetShaderLocation(new_shader.shader, "view_center"),
+        .object_props = GetShaderLocation(new_shader.shader, "object_props")
     };
 
     free(map);
 
-    return shader;
+    return new_shader;
 }
 
 size_t object_at_pos(Vector2 pos, DynShader *shader) {

@@ -35,7 +35,7 @@ int main(void) {
     DA_init(&objects, 50);
     DA_push(&objects, &obj);
 
-    object_map(&objects, 0);
+    object_map(&objects, NULL, -1);
 
     // TODO: a state struct which contains selected, object da, etc.
     size_t selected = -1;
@@ -52,7 +52,7 @@ int main(void) {
         // keybinds
         if(IsKeyPressed(KEY_SPACE)) {
             DA_push(&objects, &obj);
-            shader = object_map(&objects, 0);
+            shader = object_map(&objects, &shader, selected);
         }
 
         if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
@@ -71,13 +71,9 @@ int main(void) {
                 );
             EndShaderMode();
 
-            update_shader_locations(&shader, camera);
+            update_shader_uniforms(&shader, camera);
 
             DrawText(TextFormat("%ld", selected), 1000, 100, 100, BLUE);
-            BeginMode3D(camera);
-                DrawRay(ray, WHITE);
-                DrawGrid(10, 1.0f);
-            EndMode3D();
 
             DrawRectangle(0, 0, SIDEBAR_WIDTH, GetScreenHeight(), GRAY);
         EndDrawing();

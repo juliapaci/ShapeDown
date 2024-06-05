@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-void update_shader_locations(DynShader *shader, Camera camera) {
+void update_shader_uniforms(DynShader *shader, Camera camera) {
     SetShaderValue(shader->shader, shader->resolution,
         (float[2]){(float)GetScreenWidth(), (float)GetScreenHeight()},
         SHADER_UNIFORM_VEC2
@@ -14,6 +14,10 @@ void update_shader_locations(DynShader *shader, Camera camera) {
         SHADER_UNIFORM_VEC3
     );
     SetShaderValue(shader->shader, shader->view_center,
+        &camera.target,
+        SHADER_UNIFORM_VEC3
+    );
+    SetShaderValue(shader->shader, shader->object_props,
         &camera.target,
         SHADER_UNIFORM_VEC3
     );
