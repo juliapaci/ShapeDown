@@ -5,6 +5,8 @@
 #include "raylib.h"
 #include "object.h"
 
+#define NO_SELECTION -1
+
 void _append(char **str1, const char *str2);
 char *_read_file(const char *file_path);
 
@@ -18,7 +20,7 @@ const char *object_static_map_entry(Object *obj);
 // append dynamnic (selected, uniform properties) object to shader ray march map
 const char *object_dynamic_map_entry(Object *obj);
 // create the entire (with all objects) object map
-DynShader object_map(DA *da, DynShader *shader, size_t selection);
+DynShader object_map(DA *da, size_t selection);
 
 // inedx (colour) of pixel at `pos`
 size_t object_at_pos(Vector2 pos, DynShader *shader);

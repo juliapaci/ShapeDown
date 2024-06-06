@@ -24,6 +24,7 @@ int main(void) {
         .fovy       = 45.0f
     };
 
+    // TODO: default object thing
     Object obj = {0};
     obj.size = (Vector3){2.0f, 2.0f, 2.0f};
     // memcpy(&obj.colour, &(struct {uint8_t a,b,c;}){10, 100, 10}, 1);
@@ -35,13 +36,17 @@ int main(void) {
     DA_init(&objects, 50);
     DA_push(&objects, &obj);
 
-    object_map(&objects, NULL, -1);
+    object_map(&objects, NO_SELECTION);
 
     // TODO: a state struct which contains selected, object da, etc.
-    size_t selected = -1;
+    size_t selected = NO_SELECTION;
+    size_t selected_last = NO_SELECTION;
 
     Ray ray = {0};
     while(!WindowShouldClose()) {
+        size_t selected_delta = selected - selected_last;
+        selected_last = selected;
+
         // camera
         if(IsKeyPressed(KEY_LEFT_CONTROL)) {
             if(IsCursorHidden()) EnableCursor();
@@ -50,10 +55,11 @@ int main(void) {
         if(IsCursorHidden()) UpdateCamera(&camera, CAMERA_FREE);
 
         // keybinds
-        if(IsKeyPressed(KEY_SPACE)) {
-            DA_push(&objects, &obj);
-            shader = object_map(&objects, &shader, selected);
-        }
+        if(IsKeyPressed(KEY_SPACE))
+            shader = add_object(&objects, &obj);
+
+        if(selected_delta)
+            object_dynamic_assignment(&shader, objects.array + selected);
 
         if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             // ray = GetMouseRay(GetMousePosition(), camera);
@@ -71,7 +77,7 @@ int main(void) {
                 );
             EndShaderMode();
 
-            update_shader_uniforms(&shader, camera);
+            update_shader_uniforms(&shader, &camera);
 
             DrawText(TextFormat("%ld", selected), 1000, 100, 100, BLUE);
 

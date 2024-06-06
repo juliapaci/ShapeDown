@@ -105,13 +105,14 @@ const char *object_dynamic_map_entry(Object *obj) {
     const char *position = "point - object_props[0]";
     const char *size = "object_props[1]";
 
+    // TODO: radius should be from object_props
     const char *block = TextFormat("\tdistance = min(\n%s,\n\t\tdistance);\n",
             TextFormat("\t\tsdf_round_box(\n\t\t\t%s,\n\t\t\t%s,\n\t\t\t%f)", position, size, obj->radius));
 
     return block;
 }
 
-DynShader object_map(DA *da, DynShader *shader, size_t selection) {
+DynShader object_map(DA *da, size_t selection) {
     char *map = NULL;
 
     char *prelude = _read_file("src/shader.glsl");
@@ -129,27 +130,26 @@ DynShader object_map(DA *da, DynShader *shader, size_t selection) {
     for(size_t i = 0; i < da->amount; i++) {
         const char *entry = NULL;
 
-        if(i == selection) {
-            object_dynamic_assignment(shader, da->array + i);
+        if(i == selection)
             entry = object_dynamic_map_entry(da->array + i);
-        } else
+        else
             entry = object_static_map_entry(da->array + i);
 
         _append(&map, entry);
     }
     _append(&map, map_end);
 
-    DynShader new_shader = {
+    DynShader shader = {
         .shader       = LoadShaderFromMemory(0, map),
-        .resolution   = GetShaderLocation(new_shader.shader, "resolution"),
-        .view_eye     = GetShaderLocation(new_shader.shader, "view_eye"),
-        .view_center  = GetShaderLocation(new_shader.shader, "view_center"),
-        .object_props = GetShaderLocation(new_shader.shader, "object_props")
+        .resolution   = GetShaderLocation(shader.shader, "resolution"),
+        .view_eye     = GetShaderLocation(shader.shader, "view_eye"),
+        .view_center  = GetShaderLocation(shader.shader, "view_center"),
+        .object_props = GetShaderLocation(shader.shader, "object_props")
     };
 
     free(map);
 
-    return new_shader;
+    return shader;
 }
 
 size_t object_at_pos(Vector2 pos, DynShader *shader) {
