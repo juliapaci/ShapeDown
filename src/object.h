@@ -43,11 +43,33 @@ typedef struct {
     int object_props;
 } DynShader;
 
+typedef enum {
+    CONTROL_NONE,
+    CONTROL_POS_X,
+    CONTROL_POS_Y,
+    CONTROL_POS_Z,
+    CONTROL_SCALE_X,
+    CONTROL_SCALE_Y,
+    CONTROL_SCALE_Z,
+    CONTROL_ANGLE_X,
+    CONTROL_ANGLE_Y,
+    CONTROL_ANGLE_Z,
+    CONTROL_COLOR_R,
+    CONTROL_COLOR_G,
+    CONTROL_COLOR_B,
+    CONTROL_TRANSLATE,
+    CONTROL_ROTATE,
+    CONTROL_SCALE,
+    CONTROL_CORNER_RADIUS,
+    CONTROL_ROTATE_CAMERA,
+    CONTROL_BLOB_AMOUNT,
+} Control;
+
 // updates uniform values
 void update_shader_uniforms(DynShader *shader, Camera *camera);
 
-// draws object gizmos e.g. movie, scale, etc.
-void draw_gizmos(Object *obj);
+// draws object gizmos and returns the selected control
+Control manage_gizmos(Object *obj);
 
 // adds an object, returns the reloaded shader
 DynShader add_object(DA *da, Object *obj);

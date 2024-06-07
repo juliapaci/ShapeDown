@@ -58,12 +58,12 @@ int main(void) {
         if(IsKeyPressed(KEY_SPACE))
             shader = add_object(&objects, &obj);
 
-        if(selected_delta)
-            object_dynamic_assignment(&shader, objects.array + selected);
-
         if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             // ray = GetMouseRay(GetMousePosition(), camera);
             selected = object_at_pos(GetMousePosition(), &shader);
+
+            if(selected_delta)
+                object_dynamic_assignment(&shader, objects.array + selected);
         }
 
         BeginDrawing();
@@ -77,12 +77,18 @@ int main(void) {
                 );
             EndShaderMode();
 
-            update_shader_uniforms(&shader, &camera);
-
             DrawText(TextFormat("%ld", selected), 1000, 100, 100, BLUE);
 
-            DrawRectangle(0, 0, SIDEBAR_WIDTH, GetScreenHeight(), GRAY);
+            BeginMode3D(camera); {
+                if(selected != -1)
+                    manage_gizmos(objects.array + selected);
+            } EndMode3D();
+
+            // gui hud
+            DrawRectangle(0, 0, SIDEBAR_WIDTH, GetScreenHeight(), (Color){61, 61, 61, 255});
         EndDrawing();
+
+        update_shader_uniforms(&shader, &camera);
     }
 
     DA_free(&objects);

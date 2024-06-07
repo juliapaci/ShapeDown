@@ -2,6 +2,7 @@
 #include "helper.h"
 
 #include <raylib.h>
+#include <raymath.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -50,6 +51,41 @@ DynShader add_object(DA *da, Object *obj) {
     return object_map(da, NO_SELECTION);
 }
 
-void draw_gizmos(Object *obj) {
+Control manage_gizmos(Object *obj) {
+    const Vector3 pos = obj->position;
+    const Vector3 size = obj->size;
 
+    // TODO: axes
+
+    // position
+    // x
+    DrawLine3D(pos, Vector3Add(pos, (Vector3){0.5,0,0}), RED);
+    DrawCylinderEx(
+        Vector3Add(pos, (Vector3){0.5,0,0}),
+        Vector3Add(pos, (Vector3){.7,0,0}),
+        0.1, 0, 12, RED
+    );
+
+    // y
+    DrawLine3D(pos, Vector3Add(pos, (Vector3){0,0.5,0}), GREEN);
+    DrawCylinderEx(
+        Vector3Add(obj->position, (Vector3){0,0.5,0}),
+        Vector3Add(obj->position, (Vector3){0,0.7,0}),
+        0.1, 0, 12, GREEN
+    );
+
+    // z
+    DrawLine3D(pos, Vector3Add(pos, (Vector3){0,0,0.5}), BLUE);
+    DrawCylinderEx(
+        Vector3Add(obj->position, (Vector3){0,0,0.5}),
+        Vector3Add(obj->position, (Vector3){0,0,0.7}),
+        0.1, 0, 12, BLUE
+    );
+
+    // sizes
+    DrawCube(Vector3Add(pos, (Vector3){size.x,0,0}), .1,.1,.1, RED);
+    DrawCube(Vector3Add(pos, (Vector3){0,size.y,0}), .1,.1,.1, GREEN);
+    DrawCube(Vector3Add(pos, (Vector3){0,0,size.z}), .1,.1,.1, BLUE);
+
+    return 0;
 }
