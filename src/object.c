@@ -51,7 +51,7 @@ DynShader add_object(DA *da, Object *obj) {
     return object_map(da, NO_SELECTION);
 }
 
-Control manage_gizmos(Object *obj) {
+void draw_gizmos(Object *obj) {
     const Vector3 pos = obj->position;
     const Vector3 size = obj->size;
 
@@ -86,6 +86,57 @@ Control manage_gizmos(Object *obj) {
     DrawCube(Vector3Add(pos, (Vector3){size.x,0,0}), .1,.1,.1, RED);
     DrawCube(Vector3Add(pos, (Vector3){0,size.y,0}), .1,.1,.1, GREEN);
     DrawCube(Vector3Add(pos, (Vector3){0,0,size.z}), .1,.1,.1, BLUE);
+}
 
-    return 0;
+// type = 0 - x, 1 - y, 2 - z
+#define NEAREST_AXES(type)                                              \
+    NearestPointOnLine(pos,                                             \
+            Vector3Add(pos, TYPE_OR_ZERO(type, 1.0)),                   \
+            ray.position,                                               \
+            Vector3Add(ray.position, ray.direction));                   \
+
+#define TOUCH_CONTROL_POS(type) if(                                     \
+    GetRayCollisionSphere(ray, Vector3Add(pos, TYPE_OR_ZERO(type, 0.6)  \
+                ), .1).hit) {                                           \
+                                                                        \
+    control.kind = CONTROL_POS_X + type;                                \
+                                                                        \
+    Vector3 nearest = NEAREST_AXES(type);                               \
+                                                                        \
+    control.adjustment =                                                \
+        (type == 0) * (pos.x - nearest.x) +                             \
+        (type == 1) * (pos.y - nearest.y) +                             \
+        (type == 2) * (pos.z - nearest.z);                              \
+                                                                        \
+    break;                                                              \
+}
+
+#define TOUCH_CONTROL_SIZE(type) if(                                    \
+    GetRayCollisionBox(ray, boundingBox_sized(Vector3Add(pos, (Vector3) \
+                {(type==0)*size.x,(type==1)*size.y,(type==2)*size.z}    \
+                ), 0.2)).hit) {                                         \
+    control.kind = CONTROL_SCALE_X + type;                              \
+                                                                        \
+    Vector3 nearest = NEAREST_AXES(type);                               \
+                                                                        \
+    control.adjustment =                                                \
+        (type == 0) * (size.x - nearest.x) +                            \
+        (type == 1) * (size.y - nearest.y) +                            \
+        (type == 2) * (size.z - nearest.z);                             \
+                                                                        \
+    break;                                                              \
+}
+
+struct Control control(Object *obj, Ray ray) {
+    const Vector3 pos = obj->position;
+    const Vector3 size = obj->size;
+
+    struct Control control = {0};
+
+    for(uint8_t i = 0; i < 3; i++) {
+        TOUCH_CONTROL_POS(i);
+        TOUCH_CONTROL_SIZE(i);
+    }
+
+    return control;
 }

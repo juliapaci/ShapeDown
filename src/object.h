@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#define TYPE_OR_ZERO(type, val) (Vector3){(type == 0) * val, (type == 1) * val, (type == 2) * val}
+
 typedef struct {
     Vector3 position;
     Vector3 size;
@@ -63,13 +65,20 @@ typedef enum {
     CONTROL_CORNER_RADIUS,
     CONTROL_ROTATE_CAMERA,
     CONTROL_BLOB_AMOUNT,
-} Control;
+} ControlKind;
+
+struct Control {
+    ControlKind kind;
+    float adjustment;
+};
 
 // updates uniform values
 void update_shader_uniforms(DynShader *shader, Camera *camera);
 
-// draws object gizmos and returns the selected control
-Control manage_gizmos(Object *obj);
+// draws object gizmos
+void draw_gizmos(Object *obj);
+// returns the users object manipulation
+struct Control control(Object *obj, Ray ray);
 
 // adds an object, returns the reloaded shader
 DynShader add_object(DA *da, Object *obj);

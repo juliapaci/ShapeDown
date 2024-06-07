@@ -12,6 +12,13 @@ char *_read_file(const char *file_path);
 
 // bounding box (rect) from a size
 BoundingBox boundingBox_sized(Vector3 center, float size);
+// Find the point on line p1 to p2 nearest to line p2 to p4
+Vector3 NearestPointOnLine(
+    Vector3 p1,
+    Vector3 p2,
+    Vector3 p4,
+    Vector3 p3
+);
 
 // sets the dynamic selection uniform to selected objects properties
 void object_dynamic_assignment(DynShader *shader, Object *obj);
@@ -22,7 +29,7 @@ const char *object_dynamic_map_entry(Object *obj);
 // create the entire (with all objects) object map
 DynShader object_map(DA *da, size_t selection);
 
-// inedx (colour) of pixel at `pos`
+// index (colour) of pixel at `pos`
 size_t object_at_pos(Vector2 pos, DynShader *shader);
 
 #endif // __HELPER_H__

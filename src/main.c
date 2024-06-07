@@ -43,9 +43,12 @@ int main(void) {
     size_t selected_last = NO_SELECTION;
 
     Ray ray = {0};
+    struct Control mouse_control = {0};
     while(!WindowShouldClose()) {
         size_t selected_delta = selected - selected_last;
         selected_last = selected;
+
+        Object selected_object = objects.array[selected];
 
         // camera
         if(IsKeyPressed(KEY_LEFT_CONTROL)) {
@@ -59,11 +62,15 @@ int main(void) {
             shader = add_object(&objects, &obj);
 
         if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            // ray = GetMouseRay(GetMousePosition(), camera);
-            selected = object_at_pos(GetMousePosition(), &shader);
+            ray = GetMouseRay(GetMousePosition(), camera);
+            mouse_control = control(&selected_object, ray);
 
-            if(selected_delta)
-                object_dynamic_assignment(&shader, objects.array + selected);
+            if(!mouse_control.kind) {
+                selected = object_at_pos(GetMousePosition(), &shader);
+
+                if(selected_delta)
+                    object_dynamic_assignment(&shader, &selected_object);
+            }
         }
 
         BeginDrawing();
@@ -77,11 +84,11 @@ int main(void) {
                 );
             EndShaderMode();
 
-            DrawText(TextFormat("%ld", selected), 1000, 100, 100, BLUE);
+            DrawText(TextFormat("s: %ld, c: %ld", selected, mouse_control.kind), 1000, 100, 100, BLUE);
 
             BeginMode3D(camera); {
-                if(selected != -1)
-                    manage_gizmos(objects.array + selected);
+                if(selected != (size_t)-1)
+                    draw_gizmos(&selected_object);
             } EndMode3D();
 
             // gui hud
