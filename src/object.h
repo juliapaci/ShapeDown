@@ -79,6 +79,8 @@ void update_shader_uniforms(DynShader *shader, Camera *camera);
 void draw_gizmos(Object *obj);
 // returns the users object manipulation
 struct Control control(Object *obj, Ray ray);
+// apply control to the object
+void apply_manipulation(struct Control *control, Object *obj);
 
 // adds an object, returns the reloaded shader
 DynShader add_object(DA *da, Object *obj);

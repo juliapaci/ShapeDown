@@ -140,3 +140,54 @@ struct Control control(Object *obj, Ray ray) {
 
     return control;
 }
+
+void apply_manipulation(struct Control *control, Object *obj) {
+    switch(control->kind){
+        case CONTROL_NONE:
+            break;
+        case CONTROL_POS_X:
+            obj->position.x += control->adjustment;
+            break;
+        case CONTROL_POS_Y:
+            obj->position.y += control->adjustment;
+            break;
+        case CONTROL_POS_Z:
+            obj->position.z += control->adjustment;
+            break;
+        case CONTROL_SCALE_X:
+            obj->size.x += control->adjustment;
+            break;
+        case CONTROL_SCALE_Y:
+            obj->size.y += control->adjustment;
+            break;
+        case CONTROL_SCALE_Z:
+            obj->size.z += control->adjustment;
+            break;
+        case CONTROL_ANGLE_X:
+            obj->rotation.x += control->adjustment;
+            break;
+        case CONTROL_ANGLE_Y:
+            obj->rotation.y += control->adjustment;
+            break;
+        case CONTROL_ANGLE_Z:
+            obj->rotation.z += control->adjustment;
+            break;
+        case CONTROL_COLOR_R:
+            obj->colour.r += control->adjustment;
+            break;
+        case CONTROL_COLOR_G:
+            obj->colour.g += control->adjustment;
+            break;
+        case CONTROL_COLOR_B:
+            obj->colour.b += control->adjustment;
+            break;
+        case CONTROL_TRANSLATE:
+        case CONTROL_ROTATE:
+        case CONTROL_SCALE:
+        case CONTROL_CORNER_RADIUS:
+        case CONTROL_ROTATE_CAMERA:
+        case CONTROL_BLOB_AMOUNT:
+        default:
+            break;
+    }
+}

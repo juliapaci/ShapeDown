@@ -42,13 +42,11 @@ int main(void) {
     size_t selected = NO_SELECTION;
     size_t selected_last = NO_SELECTION;
 
-    Ray ray = {0};
     struct Control mouse_control = {0};
+    Object *selected_object = NULL;
     while(!WindowShouldClose()) {
         size_t selected_delta = selected - selected_last;
         selected_last = selected;
-
-        Object selected_object = objects.array[selected];
 
         // camera
         if(IsKeyPressed(KEY_LEFT_CONTROL)) {
@@ -62,14 +60,17 @@ int main(void) {
             shader = add_object(&objects, &obj);
 
         if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            ray = GetMouseRay(GetMousePosition(), camera);
-            mouse_control = control(&selected_object, ray);
+            // mouse_control = control(selected_object, GetMouseRay(GetMousePosition(), camera));
 
-            if(!mouse_control.kind) {
+            if(mouse_control.kind)
+                apply_manipulation(&mouse_control, selected_object);
+            else {
                 selected = object_at_pos(GetMousePosition(), &shader);
 
-                if(selected_delta)
-                    object_dynamic_assignment(&shader, &selected_object);
+                if(selected_delta) {
+                    selected_object = &objects.array[selected];
+                    object_dynamic_assignment(&shader, selected_object);
+                }
             }
         }
 
@@ -86,13 +87,16 @@ int main(void) {
 
             DrawText(TextFormat("s: %ld, c: %ld", selected, mouse_control.kind), 1000, 100, 100, BLUE);
 
-            BeginMode3D(camera); {
+            BeginMode3D(camera);
                 if(selected != (size_t)-1)
-                    draw_gizmos(&selected_object);
-            } EndMode3D();
+                    draw_gizmos(selected_object);
+            EndMode3D();
 
             // gui hud
             DrawRectangle(0, 0, SIDEBAR_WIDTH, GetScreenHeight(), (Color){61, 61, 61, 255});
+
+            if(IsCursorHidden())
+                DrawCircle(GetScreenWidth()/2.0, GetScreenHeight()/2.0, 5.0, RAYWHITE);
         EndDrawing();
 
         update_shader_uniforms(&shader, &camera);

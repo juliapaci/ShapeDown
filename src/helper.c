@@ -144,8 +144,9 @@ const char *object_static_map_entry(Object *obj) {
     const char *position = TextFormat("point - vec3(%f, %f, %f)", obj->position.x, obj->position.y, obj->position.z);
     const char *size = TextFormat("vec3(%f, %f, %f)", obj->size.x, obj->size.y, obj->size.z);
 
-    const char *block = TextFormat("\tdistance = min(\n%s,\n\t\tdistance);\n",
-            TextFormat("\t\tsdf_round_box(\n\t\t\t%s,\n\t\t\t%s,\n\t\t\t%f)", position, size, obj->radius));
+    const char *block = TextFormat("\tdistance = Min(\n\t\tvec4(%s, %s),\n\t\tdistance);\n",
+            TextFormat("sdf_round_box(\n\t\t\t%s,\n\t\t\t%s,\n\t\t\t%f)", position, size, obj->radius),
+            TextFormat("\t\t%f, %f, %f", obj->colour.r, obj->colour.g, obj->colour.b));
 
     return block;
 }
@@ -155,8 +156,8 @@ const char *object_dynamic_map_entry(Object *obj) {
     const char *size = "object_props[1]";
 
     // TODO: radius should be from object_props
-    const char *block = TextFormat("\tdistance = min(\n%s,\n\t\tdistance);\n",
-            TextFormat("\t\tsdf_round_box(\n\t\t\t%s,\n\t\t\t%s,\n\t\t\t%f)", position, size, obj->radius));
+    const char *block = TextFormat("\tdistance = Min(\n\t\tvec4(%s, object_props[3]),\n\t\tdistance);\n",
+            TextFormat("sdf_round_box(\n\t\t\t%s,\n\t\t\t%s,\n\t\t\t%f)", position, size, obj->radius));
 
     return block;
 }
@@ -166,9 +167,9 @@ DynShader object_map(DA *da, size_t selection) {
 
     char *prelude = _read_file("src/shader.glsl");
     char *base = _read_file("src/base.glsl");
-    const char *sig = "\nfloat map(vec3);\n";
-    const char *map_start = "float map(vec3 point) {\n"
-        "\tfloat distance = MAX_RAY_DIST;\n";
+    const char *sig = "\nvec4 map(vec3);\n";
+    const char *map_start = "vec4 map(vec3 point) {\n" // vec4 (distance, colour)
+        "\tvec4 distance = vec4(MAX_RAY_DIST, vec3(0));\n";
     const char *map_end = "\treturn distance;\n"
         "}\0";
 
@@ -197,7 +198,6 @@ DynShader object_map(DA *da, size_t selection) {
     };
 
     free(map);
-
     return shader;
 }
 
