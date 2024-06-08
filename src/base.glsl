@@ -16,27 +16,25 @@ vec4 ray_march(vec3 origin, vec3 direction) {
 
     for(float i = 0.0; i < MAX_STEPS; i++) {
         vec3 pos = origin + (direction * distance);
-        vec4 sdf_dist = map(pos);
+        vec4 sdf = map(pos);
 
-        if(sdf_dist.x < MIN_SDF_DIST) break;
-
-        distance += sdf_dist.x;
-
-        if (distance > MAX_RAY_DIST) break;
-        colour = sdf_dist.yzw;
+        if(sdf.x < MIN_SDF_DIST || distance > MAX_RAY_DIST) break;
+        distance += sdf.x;
+        colour = sdf.gba;
     }
 
-    return vec4(distance, colour.xyz);
+    if(distance > MAX_RAY_DIST) colour = vec3(-1);
+    return vec4(distance, colour);
 }
 
 vec3 render(vec3 origin, vec3 direction) {
-    vec4 dist = ray_march(origin, direction);
-    vec3 colour = dist.yzw;
+    vec4 result = ray_march(origin, direction);
+    vec3 colour = vec3(0.4, 0.5, 0.6) + direction.y*0.4;
 
-    if(dist.x < MAX_RAY_DIST)
-        colour += direction.y*0.4;
+    if(result.yzw.r > -0.5)
+        colour = result.yzw;
 
-    return colour;
+    return vec3(clamp(colour, 0.0, 1.0));
 }
 
 // thanks raylib raymarching example - Inigo Quilez

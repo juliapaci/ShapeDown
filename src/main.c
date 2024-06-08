@@ -29,21 +29,21 @@ int main(void) {
     obj.size = (Vector3){2.0f, 2.0f, 2.0f};
     // memcpy(&obj.colour, &(struct {uint8_t a,b,c;}){10, 100, 10}, 1);
     obj.colour.r = 100;
+    obj.colour.g = 25;
     obj.colour.b = 100;
-    obj.colour.g = 100;
 
     DA objects;
     DA_init(&objects, 50);
     DA_push(&objects, &obj);
 
-    object_map(&objects, NO_SELECTION);
+    object_map(&objects, NO_SELECTION, false);
 
     // TODO: a state struct which contains selected, object da, etc.
     size_t selected = NO_SELECTION;
     size_t selected_last = NO_SELECTION;
 
     struct Control mouse_control = {0};
-    Object *selected_object = NULL;
+    Object *selected_object = &objects.array[0];
     while(!WindowShouldClose()) {
         size_t selected_delta = selected - selected_last;
         selected_last = selected;
@@ -60,12 +60,12 @@ int main(void) {
             shader = add_object(&objects, &obj);
 
         if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            // mouse_control = control(selected_object, GetMouseRay(GetMousePosition(), camera));
+            mouse_control = control(selected_object, GetMouseRay(GetMousePosition(), camera));
 
             if(mouse_control.kind)
                 apply_manipulation(&mouse_control, selected_object);
             else {
-                selected = object_at_pos(GetMousePosition(), &shader);
+                selected = object_at_pos(GetMousePosition(), &objects);
 
                 if(selected_delta) {
                     selected_object = &objects.array[selected];

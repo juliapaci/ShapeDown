@@ -48,7 +48,7 @@ void update_shader_uniforms(DynShader *shader, Camera *camera) {
 
 DynShader add_object(DA *da, Object *obj) {
     DA_push(da, obj);
-    return object_map(da, NO_SELECTION);
+    return object_map(da, NO_SELECTION, false);
 }
 
 void draw_gizmos(Object *obj) {

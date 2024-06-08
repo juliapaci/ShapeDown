@@ -140,13 +140,25 @@ void object_dynamic_assignment(DynShader *shader, Object *obj) {
     );
 }
 
-const char *object_static_map_entry(Object *obj) {
+const char *object_static_map_entry(Object *obj, size_t index) {
     const char *position = TextFormat("point - vec3(%f, %f, %f)", obj->position.x, obj->position.y, obj->position.z);
     const char *size = TextFormat("vec3(%f, %f, %f)", obj->size.x, obj->size.y, obj->size.z);
 
+    uint8_t r, g, b;
+    if(index == -1) {
+        r = obj->colour.r/255.0;
+        g = obj->colour.g/255.0;
+        b = obj->colour.b/255.0;
+    } else {
+        // TODO: spread out index across more components (rgb) or else dynamic array size is capped by uint8_t
+        r = index + 1;
+        g = 0;
+        b = 0;
+    }
+
     const char *block = TextFormat("\tdistance = Min(\n\t\tvec4(%s, %s),\n\t\tdistance);\n",
             TextFormat("sdf_round_box(\n\t\t\t%s,\n\t\t\t%s,\n\t\t\t%f)", position, size, obj->radius),
-            TextFormat("\t\t%f, %f, %f", obj->colour.r, obj->colour.g, obj->colour.b));
+            TextFormat("\t\t%f, %f, %f", r, g, b));
 
     return block;
 }
@@ -162,7 +174,8 @@ const char *object_dynamic_map_entry(Object *obj) {
     return block;
 }
 
-DynShader object_map(DA *da, size_t selection) {
+DynShader object_map(DA *da, size_t selection, bool colour_index) {
+    colour_index = false;
     char *map = NULL;
 
     char *prelude = _read_file("src/shader.glsl");
@@ -183,14 +196,14 @@ DynShader object_map(DA *da, size_t selection) {
         if(i == selection)
             entry = object_dynamic_map_entry(da->array + i);
         else
-            entry = object_static_map_entry(da->array + i);
+            entry = object_static_map_entry(da->array + i, colour_index * i - 1);
 
         _append(&map, entry);
     }
     _append(&map, map_end);
 
     DynShader shader = {
-        .shader       = LoadShaderFromMemory(0, map),
+        .shader       = LoadShaderFromMemory(NULL, map),
         .resolution   = GetShaderLocation(shader.shader, "resolution"),
         .view_eye     = GetShaderLocation(shader.shader, "view_eye"),
         .view_center  = GetShaderLocation(shader.shader, "view_center"),
@@ -201,11 +214,12 @@ DynShader object_map(DA *da, size_t selection) {
     return shader;
 }
 
-size_t object_at_pos(Vector2 pos, DynShader *shader) {
+size_t object_at_pos(Vector2 pos, DA *objects) {
+    Shader shader = object_map(objects, (size_t)-1, true).shader;
     RenderTexture2D target = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
 
     BeginTextureMode(target);
-        BeginShaderMode(shader->shader);
+        BeginShaderMode(shader);
             rlBegin(RL_QUADS);
             rlTexCoord2f(pos.x-1, pos.y-1);
             rlVertex2f(pos.x-1, pos.y-1);
