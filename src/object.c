@@ -40,14 +40,17 @@ void update_shader_uniforms(DynShader *shader, Camera *camera) {
         &camera->target,
         SHADER_UNIFORM_VEC3
     );
-    SetShaderValue(shader->shader, shader->object_props,
-        &camera->target,
-        SHADER_UNIFORM_VEC3
-    );
+    // object_props is set somewhere else;
+    // SetShaderValueV(shader->shader, shader->object_props,
+    //     ...,
+    //     SHADER_UNIFORM_VEC3,
+    //     5
+    // );
 }
 
 DynShader add_object(DA *da, Object *obj) {
     DA_push(da, obj);
+    // TODO: pass selection to keep state
     return object_map(da, NO_SELECTION, false);
 }
 

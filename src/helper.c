@@ -144,7 +144,7 @@ const char *object_static_map_entry(Object *obj, size_t index) {
     const char *position = TextFormat("point - vec3(%f, %f, %f)", obj->position.x, obj->position.y, obj->position.z);
     const char *size = TextFormat("vec3(%f, %f, %f)", obj->size.x, obj->size.y, obj->size.z);
 
-    uint8_t r, g, b;
+    double r, g, b;
     if(index == -1) {
         r = obj->colour.r/255.0;
         g = obj->colour.g/255.0;
@@ -156,9 +156,11 @@ const char *object_static_map_entry(Object *obj, size_t index) {
         b = 0;
     }
 
+    const char *colour = TextFormat("\n\t\tvec3(%g, %g, %g)", r, g, b);
+
     const char *block = TextFormat("\tdistance = Min(\n\t\tvec4(%s, %s),\n\t\tdistance);\n",
             TextFormat("sdf_round_box(\n\t\t\t%s,\n\t\t\t%s,\n\t\t\t%f)", position, size, obj->radius),
-            TextFormat("\t\t%f, %f, %f", r, g, b));
+            colour);
 
     return block;
 }
@@ -166,16 +168,17 @@ const char *object_static_map_entry(Object *obj, size_t index) {
 const char *object_dynamic_map_entry(Object *obj) {
     const char *position = "point - object_props[0]";
     const char *size = "object_props[1]";
+    const char *colour = "object_props[3]";
 
     // TODO: radius should be from object_props
-    const char *block = TextFormat("\tdistance = Min(\n\t\tvec4(%s, object_props[3]),\n\t\tdistance);\n",
-            TextFormat("sdf_round_box(\n\t\t\t%s,\n\t\t\t%s,\n\t\t\t%f)", position, size, obj->radius));
+    const char *block = TextFormat("\tdistance = Min(\n\t\tvec4(%s, %s),\n\t\tdistance);\n",
+            TextFormat("sdf_round_box(\n\t\t\t%s,\n\t\t\t%s,\n\t\t\t%f)", position, size, obj->radius),
+            colour);
 
     return block;
 }
 
 DynShader object_map(DA *da, size_t selection, bool colour_index) {
-    colour_index = false;
     char *map = NULL;
 
     char *prelude = _read_file("src/shader.glsl");
@@ -210,34 +213,36 @@ DynShader object_map(DA *da, size_t selection, bool colour_index) {
         .object_props = GetShaderLocation(shader.shader, "object_props")
     };
 
-    free(map);
     return shader;
 }
 
-size_t object_at_pos(Vector2 pos, DA *objects) {
-    Shader shader = object_map(objects, (size_t)-1, true).shader;
+size_t object_at_pos(Vector2 pos, Camera *camera, DA *objects) {
+    DynShader shader = object_map(objects, (size_t)-1, true);
+    update_shader_uniforms(&shader, camera);
+
     RenderTexture2D target = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
 
     BeginTextureMode(target);
-        BeginShaderMode(shader);
+        BeginShaderMode(shader.shader);
             rlBegin(RL_QUADS);
-            rlTexCoord2f(pos.x-1, pos.y-1);
-            rlVertex2f(pos.x-1, pos.y-1);
+                rlTexCoord2f(pos.x-1, pos.y-1);
+                rlVertex2f(pos.x-1, pos.y-1);
 
-            rlTexCoord2f(pos.x-1, pos.y+1);
-            rlVertex2f(pos.x-1, pos.y+1);
+                rlTexCoord2f(pos.x-1, pos.y+1);
+                rlVertex2f(pos.x-1, pos.y+1);
 
-            rlTexCoord2f(pos.x+1, pos.y+1);
-            rlVertex2f(pos.x+1, pos.y+1);
+                rlTexCoord2f(pos.x+1, pos.y+1);
+                rlVertex2f(pos.x+1, pos.y+1);
 
-            rlTexCoord2f(pos.x+1, pos.y-1);
-            rlVertex2f(pos.x+1, pos.y-1);
+                rlTexCoord2f(pos.x+1, pos.y-1);
+                rlVertex2f(pos.x+1, pos.y-1);
             rlEnd();
         EndShaderMode();
     EndTextureMode();
 
     uint8_t *pixels = rlReadTexturePixels(target.texture.id, target.texture.width, target.texture.height, target.texture.format);
-    int object_index = pixels[(int)(pos.x + target.texture.width*(target.texture.height - pos.y))*4] - 1;
+
+    uint8_t object_index = pixels[(int)(pos.x + target.texture.width*(target.texture.height - pos.y))*4] - 1;
 
     free(pixels);
     UnloadRenderTexture(target);

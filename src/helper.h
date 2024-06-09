@@ -30,6 +30,6 @@ const char *object_dynamic_map_entry(Object *obj);
 DynShader object_map(DA *da, size_t selection, bool colour_index);
 
 // index (colour) of pixel at `pos`
-size_t object_at_pos(Vector2 pos, DA *objects);
+size_t object_at_pos(Vector2 pos, Camera *camera, DA *objects);
 
 #endif // __HELPER_H__
