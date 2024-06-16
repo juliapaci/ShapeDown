@@ -1,9 +1,11 @@
 #include "helper.h"
+
 #include <raymath.h>
 #include <rlgl.h>
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 char *_read_file(const char *file_path) {
     FILE *file = fopen(file_path, "rb");
@@ -151,9 +153,9 @@ const char *object_static_map_entry(Object *obj, size_t index) {
         b = obj->colour.b/255.0;
     } else {
         // TODO: spread out index across more components (rgb) or else dynamic array size is capped by uint8_t
-        r = index + 1;
-        g = 0;
-        b = 0;
+        r = (index-1)/255.0;
+        g = 0.0;
+        b = 0.0;
     }
 
     const char *colour = TextFormat("\n\t\tvec3(%g, %g, %g)", r, g, b);
@@ -199,7 +201,7 @@ DynShader object_map(DA *da, size_t selection, bool colour_index) {
         if(i == selection)
             entry = object_dynamic_map_entry(da->array + i);
         else
-            entry = object_static_map_entry(da->array + i, colour_index * i - 1);
+            entry = object_static_map_entry(da->array + i, colour_index * (i + 1) - 1);
 
         _append(&map, entry);
     }
@@ -242,7 +244,8 @@ size_t object_at_pos(Vector2 pos, Camera *camera, DA *objects) {
 
     uint8_t *pixels = rlReadTexturePixels(target.texture.id, target.texture.width, target.texture.height, target.texture.format);
 
-    uint8_t object_index = pixels[(int)(pos.x + target.texture.width*(target.texture.height - pos.y))*4] - 1;
+    // TODO: restricted max see colour todo
+    uint8_t object_index = pixels[(int)(pos.x + target.texture.width*(target.texture.height - pos.y))*4];
 
     free(pixels);
     UnloadRenderTexture(target);

@@ -39,6 +39,7 @@ void DA_free(DA *da);
 
 typedef struct {
     Shader shader;
+    // locations
     int resolution;
     int view_center;
     int view_eye;
@@ -83,6 +84,6 @@ struct Control control(Object *obj, Ray ray);
 void apply_manipulation(struct Control *control, Object *obj);
 
 // adds an object, returns the reloaded shader
-DynShader add_object(DA *da, Object *obj);
+DynShader add_object(DA *da, Object *obj, size_t selection);
 
 #endif // __OBJECT_H__

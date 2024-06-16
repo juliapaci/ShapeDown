@@ -48,10 +48,9 @@ void update_shader_uniforms(DynShader *shader, Camera *camera) {
     // );
 }
 
-DynShader add_object(DA *da, Object *obj) {
+DynShader add_object(DA *da, Object *obj, size_t selection) {
     DA_push(da, obj);
-    // TODO: pass selection to keep state
-    return object_map(da, NO_SELECTION, false);
+    return object_map(da, selection, false);
 }
 
 void draw_gizmos(Object *obj) {
@@ -131,6 +130,11 @@ void draw_gizmos(Object *obj) {
 }
 
 struct Control control(Object *obj, Ray ray) {
+    // TODO: absolute or zero?
+    if(obj->size.x < 0) obj->size.x = 0;
+    if(obj->size.y < 0) obj->size.y = 0;
+    if(obj->size.z < 0) obj->size.z = 0;
+
     const Vector3 pos = obj->position;
     const Vector3 size = obj->size;
 
