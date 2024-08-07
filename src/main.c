@@ -4,9 +4,7 @@
 
 #include "object.h"
 #include "helper.h"
-
-#define SIDEBAR_WIDTH 300
-#define SELECTED 0
+#include "gui.h"
 
 int main(void) {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
@@ -24,10 +22,7 @@ int main(void) {
 
     // TODO: default object thing
     Object obj = {0};
-    obj.size = (Vector3){2.0f, 2.0f, 2.0f};
-    obj.colour.r = 25;
-    obj.colour.g = 100;
-    obj.colour.b = 000;
+    obj.size = (Vector3){1.0f, 1.0f, 1.0f};
 
     DA objects;
     DA_init(&objects, 50);
@@ -49,9 +44,10 @@ int main(void) {
         }
         if(IsCursorHidden()) UpdateCamera(&camera, CAMERA_FREE);
 
-        // keybinds
-        if(IsKeyPressed(KEY_SPACE))
-            shader = add_object(&objects, &obj, selected);
+        // controls
+        DynShader tmp_shader = action_keybinds(&objects, selected);
+        // if(tmp_shader.shader.id != 0)
+        //     shader = tmp_shader;
 
         if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             Vector2 pos = IsCursorHidden() ?  // TODO: find better way of position when camera stuff
@@ -80,16 +76,13 @@ int main(void) {
                 );
             EndShaderMode();
 
-            DrawText(TextFormat("s: %ld", selected), 1000, 100, 100, BLUE);
-            DrawText(TextFormat("d: %ld", selected_object->position.x), 1000, 900, 100, BLUE);
-
             BeginMode3D(camera);
                 if(selected != NO_SELECTION)
                     draw_gizmos(selected_object);
             EndMode3D();
 
             // gui hud
-            DrawRectangle(0, 0, SIDEBAR_WIDTH, GetScreenHeight(), (Color){61, 61, 61, 255});
+            draw_gui(&objects, selected);
 
             if(IsCursorHidden())
                 DrawCircle(GetScreenWidth()/2.0, GetScreenHeight()/2.0, 5.0, RAYWHITE);

@@ -11,7 +11,7 @@ int main(int argc, char *argv[]) {
     GO_REBUILD_URSELF(argc, argv);
 
     Cmd cmd = {0};
-    CMD("cc", CFLAGS, LFLAGS, "-o", "ShapeDown", "src/main.c", "src/object.c", "src/helper.c");
+    CMD("cc", CFLAGS, LFLAGS, "-o", "ShapeDown", "src/main.c", "src/object.c", "src/helper.c", "src/gui.c");
 
     return 0;
 }

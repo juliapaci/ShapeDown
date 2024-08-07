@@ -21,6 +21,12 @@ void DA_push(DA *da, Object *obj) {
     da->array[da->amount] = *obj;
 }
 
+void DA_remove(DA *da, size_t index) {
+    for(int i = index; i < --da->amount; i++) {
+        da->array[index] = da->array[index + 1];
+    }
+}
+
 void DA_free(DA *da) {
     free(da->array);
     da->array = NULL;
@@ -40,17 +46,8 @@ void update_shader_uniforms(DynShader *shader, Camera *camera) {
         &camera->target,
         SHADER_UNIFORM_VEC3
     );
-    // object_props is set somewhere else;
-    // SetShaderValueV(shader->shader, shader->object_props,
-    //     ...,
-    //     SHADER_UNIFORM_VEC3,
-    //     5
-    // );
-}
 
-DynShader add_object(DA *da, Object *obj, size_t selection) {
-    DA_push(da, obj);
-    return object_map(da, selection, false);
+    // object_props is set somewhere else
 }
 
 void draw_gizmos(Object *obj) {
@@ -197,4 +194,35 @@ void apply_manipulation(struct Control *control, Object *obj) {
         default:
             break;
     }
+}
+
+#define ACTION_BIND(key, call)          \
+    else if(IsKeyPressed(KEY_##key##))  \
+        return call
+
+DynShader action_keybinds(DA *da, size_t selection) {
+    // TODO: see main default obj
+    Object obj = {0};
+    obj.size = (Vector3){1.0f, 1.0f, 1.0f};
+
+    // if(0) {}
+    // ACTION_BIND(SPACE, {add_object(da, &obj, selection)});
+
+    if(IsKeyPressed(KEY_SPACE))
+        return add_object(da, &obj, selection);
+    else if(IsKeyPressed(KEY_X))
+        return remove_object(da, selection);
+
+    DynShader none = {0};
+    return none;
+}
+
+DynShader add_object(DA *da, Object *obj, size_t selection) {
+    DA_push(da, obj);
+    return object_map(da, selection, false);
+}
+
+DynShader remove_object(DA *da, size_t selection) {
+    DA_remove(da, selection);
+    return object_map(da, NO_SELECTION, false);
 }

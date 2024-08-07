@@ -15,6 +15,6 @@ uniform vec3 object_props[5];
 // Output fragment color
 out vec4 finalColor;
 
-const float MAX_RAY_DIST = 64.0;
+const float MAX_RAY_DIST = 256.0;
 const float MAX_STEPS    = 128.0;
 const float MIN_SDF_DIST = 0.001;

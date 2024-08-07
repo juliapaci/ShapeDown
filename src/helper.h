@@ -5,7 +5,7 @@
 #include "raylib.h"
 #include "object.h"
 
-#define NO_SELECTION -1
+#define NO_SELECTION (size_t)-1
 
 void _append(char **str1, const char *str2);
 char *_read_file(const char *file_path);

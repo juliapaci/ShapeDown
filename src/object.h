@@ -35,6 +35,7 @@ typedef struct {
 
 void DA_init(DA *da, size_t size);
 void DA_push(DA *da, Object *obj);
+void DA_remove(DA *da, size_t index);
 void DA_free(DA *da);
 
 typedef struct {
@@ -83,7 +84,12 @@ struct Control control(Object *obj, Ray ray);
 // apply control to the object
 void apply_manipulation(struct Control *control, Object *obj);
 
+// take action on any kebind thats pressed
+// `DynShader.shader.id == 0` on no keybind
+DynShader action_keybinds(DA *da, size_t selection);
+
 // adds an object, returns the reloaded shader
 DynShader add_object(DA *da, Object *obj, size_t selection);
+DynShader remove_object(DA *da,  size_t selection);
 
 #endif // __OBJECT_H__
