@@ -6,7 +6,7 @@
 
 #define SIDEBAR_WIDTH 300
 
-void draw_gui(DA *objects, size_t selection);
+void draw_gui(DA *objects, int16_t selection);
 
 void _draw_state(Object *obj);
 void _draw_list(size_t amount);

@@ -34,7 +34,7 @@ int main(void) {
     }
 
     // TODO: a state struct which contains selected, object da, etc.
-    ssize_t selected = -1;
+    int16_t selected = -1;
     Object *selected_object = NULL;
     struct Control mouse_control = {0};
 

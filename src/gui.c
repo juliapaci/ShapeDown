@@ -1,7 +1,7 @@
 #include "gui.h"
 #include <raylib.h>
 
-void draw_gui(DA *objects, size_t selection) {
+void draw_gui(DA *objects, int16_t selection) {
     DrawRectangle(0, 0, SIDEBAR_WIDTH, GetScreenHeight(), (Color){61, 61, 61, 255});
     _draw_state(&objects->array[selection]);
     _draw_list(objects->amount);

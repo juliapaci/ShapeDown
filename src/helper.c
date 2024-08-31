@@ -142,7 +142,7 @@ void object_dynamic_assignment(DynShader *shader, Object *obj) {
     );
 }
 
-const char *object_static_map_entry(Object *obj, ssize_t index) {
+const char *object_static_map_entry(Object *obj, int16_t index) {
     const char *position = TextFormat("point - vec3(%f, %f, %f)", obj->position.x, obj->position.y, obj->position.z);
     const char *size = TextFormat("vec3(%f, %f, %f)", obj->size.x, obj->size.y, obj->size.z);
 
@@ -179,7 +179,7 @@ const char *object_dynamic_map_entry(Object *obj) {
     return block;
 }
 
-DynShader object_map(DA *da, size_t selection, bool colour_index) {
+DynShader object_map(DA *da, int16_t selection, bool colour_index) {
     char *map = NULL;
 
     char *prelude = _read_file("src/shader.glsl");
@@ -217,7 +217,7 @@ DynShader object_map(DA *da, size_t selection, bool colour_index) {
     return shader;
 }
 
-size_t object_at_pos(Vector2 pos, Camera *camera, DA *objects) {
+int16_t object_at_pos(Vector2 pos, Camera *camera, DA *objects) {
     DynShader shader = object_map(objects, NO_SELECTION, true);
     update_shader_uniforms(&shader, camera);
 
@@ -247,7 +247,7 @@ size_t object_at_pos(Vector2 pos, Camera *camera, DA *objects) {
     const uint8_t r = pixels[index];
     const uint8_t g = pixels[index + 1];
     const uint8_t b = pixels[index + 2];
-    const size_t object_id = r + g + b;
+    const int16_t object_id = r + g + b;
 
     free(pixels);
     UnloadRenderTexture(target);

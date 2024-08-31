@@ -200,7 +200,7 @@ void apply_manipulation(struct Control *control, Object *obj) {
     }
 }
 
-DynShader action_keybinds(DA *da, size_t selection) {
+DynShader action_keybinds(DA *da, int16_t selection) {
     // TODO: see main default obj
     Object obj = {0};
     obj.size = (Vector3){1.0f, 1.0f, 1.0f};
@@ -214,12 +214,12 @@ DynShader action_keybinds(DA *da, size_t selection) {
     return (DynShader){0};
 }
 
-DynShader add_object(DA *da, Object *obj, size_t selection) {
+DynShader add_object(DA *da, Object *obj, int16_t selection) {
     DA_push(da, obj);
     return object_map(da, selection, false);
 }
 
-DynShader remove_object(DA *da, size_t selection) {
+DynShader remove_object(DA *da, int16_t selection) {
     DA_remove(da, selection);
     return object_map(da, NO_SELECTION, false);
 }

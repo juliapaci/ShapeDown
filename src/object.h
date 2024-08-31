@@ -81,7 +81,7 @@ void update_shader_uniforms(DynShader *shader, Camera *camera);
 
 // take action on any kebind thats pressed
 // `DynShader.shader.id == 0` on no keybind
-DynShader action_keybinds(DA *da, size_t selection);
+DynShader action_keybinds(DA *da, int16_t selection);
 // draws object gizmos
 void draw_gizmos(Object *obj);
 // returns the users object manipulation
@@ -90,7 +90,7 @@ struct Control control(Object *obj, Ray ray);
 void apply_manipulation(struct Control *control, Object *obj);
 
 // adds an object, returns the reloaded shader
-DynShader add_object(DA *da, Object *obj, size_t selection);
-DynShader remove_object(DA *da,  size_t selection);
+DynShader add_object(DA *da, Object *obj, int16_t selection);
+DynShader remove_object(DA *da, int16_t selection);
 
 #endif // __OBJECT_H__
