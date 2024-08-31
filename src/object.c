@@ -127,6 +127,10 @@ void draw_gizmos(Object *obj) {
 }
 
 struct Control control(Object *obj, Ray ray) {
+    // TODO: this shouldnt be here (hacky fix, should fix in main event loop)
+    if(obj == NULL)
+        return (struct Control){0};
+
     // TODO: absolute or zero?
     if(obj->size.x < 0) obj->size.x = 0;
     if(obj->size.y < 0) obj->size.y = 0;
@@ -196,25 +200,18 @@ void apply_manipulation(struct Control *control, Object *obj) {
     }
 }
 
-#define ACTION_BIND(key, call)          \
-    else if(IsKeyPressed(KEY_##key##))  \
-        return call
-
 DynShader action_keybinds(DA *da, size_t selection) {
     // TODO: see main default obj
     Object obj = {0};
     obj.size = (Vector3){1.0f, 1.0f, 1.0f};
-
-    // if(0) {}
-    // ACTION_BIND(SPACE, {add_object(da, &obj, selection)});
 
     if(IsKeyPressed(KEY_SPACE))
         return add_object(da, &obj, selection);
     else if(IsKeyPressed(KEY_X))
         return remove_object(da, selection);
 
-    DynShader none = {0};
-    return none;
+
+    return (DynShader){0};
 }
 
 DynShader add_object(DA *da, Object *obj, size_t selection) {

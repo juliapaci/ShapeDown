@@ -5,7 +5,11 @@
 #include "raylib.h"
 #include "object.h"
 
-#define NO_SELECTION (size_t)-1
+#define NO_SELECTION (ssize_t)-1
+#define NO_OBJECT NULL
+#define SELECTED_ID(id) (id != NO_SELECTION)
+#define SELECTED_OBJ(obj) (obj != NO_OBJECT)
+#define SELECTED(id, obj) (SELECTED_ID(id) && SELECTED_OBJ(obj))
 
 void _append(char **str1, const char *str2);
 char *_read_file(const char *file_path);

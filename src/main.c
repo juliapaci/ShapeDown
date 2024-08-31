@@ -2,6 +2,8 @@
 #include <raymath.h>
 #include <string.h>
 
+#include <stdio.h>
+
 #include "object.h"
 #include "helper.h"
 #include "gui.h"
@@ -32,8 +34,8 @@ int main(void) {
     }
 
     // TODO: a state struct which contains selected, object da, etc.
-    size_t selected = 0;
-    Object *selected_object = &objects.array[selected];
+    ssize_t selected = -1;
+    Object *selected_object = NULL;
     struct Control mouse_control = {0};
 
     while(!WindowShouldClose()) {
@@ -46,8 +48,9 @@ int main(void) {
 
         // controls
         DynShader tmp_shader = action_keybinds(&objects, selected);
-        // if(tmp_shader.shader.id != 0)
-        //     shader = tmp_shader;
+
+        if(tmp_shader.shader.id != 0)
+            shader = tmp_shader;
 
         if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             Vector2 pos = IsCursorHidden() ?  // TODO: find better way of position when camera stuff
@@ -56,10 +59,11 @@ int main(void) {
 
             mouse_control = control(selected_object, GetMouseRay(pos, camera));
 
-            if(mouse_control.kind)
+            if(mouse_control.kind) // editing selected object
                 apply_manipulation(&mouse_control, selected_object);
-            else {
+            else { // selecting a new object
                 selected = object_at_pos(pos, &camera, &objects);
+                // TODO: check if object with selected id exists or find another qway of prevent background colour
 
                 selected_object = &objects.array[selected];
             }

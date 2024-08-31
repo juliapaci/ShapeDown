@@ -26,6 +26,8 @@ typedef struct {
     bool subtract;
 } Object;
 
+// TODO: use linked list instead
+
 // Dynamic Array
 typedef struct {
     size_t amount;
@@ -77,16 +79,15 @@ struct Control {
 // updates uniform values
 void update_shader_uniforms(DynShader *shader, Camera *camera);
 
+// take action on any kebind thats pressed
+// `DynShader.shader.id == 0` on no keybind
+DynShader action_keybinds(DA *da, size_t selection);
 // draws object gizmos
 void draw_gizmos(Object *obj);
 // returns the users object manipulation
 struct Control control(Object *obj, Ray ray);
 // apply control to the object
 void apply_manipulation(struct Control *control, Object *obj);
-
-// take action on any kebind thats pressed
-// `DynShader.shader.id == 0` on no keybind
-DynShader action_keybinds(DA *da, size_t selection);
 
 // adds an object, returns the reloaded shader
 DynShader add_object(DA *da, Object *obj, size_t selection);
