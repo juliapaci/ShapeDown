@@ -142,7 +142,7 @@ void object_dynamic_assignment(DynShader *shader, Object *obj) {
     );
 }
 
-const char *object_static_map_entry(Object *obj, size_t index) {
+const char *object_static_map_entry(Object *obj, ssize_t index) {
     const char *position = TextFormat("point - vec3(%f, %f, %f)", obj->position.x, obj->position.y, obj->position.z);
     const char *size = TextFormat("vec3(%f, %f, %f)", obj->size.x, obj->size.y, obj->size.z);
 
@@ -152,13 +152,12 @@ const char *object_static_map_entry(Object *obj, size_t index) {
         g = obj->colour.g/255.0;
         b = obj->colour.b/255.0;
     } else {
-        // TODO: spread out index across more components (rgb) or else dynamic array size is capped by uint8_t
-        r = (index-1)/255.0;
-        g = 0.0;
-        b = 0.0;
+        r = index/255.0;
+        g = fmax(index - 255, 0)/255.0;
+        b = fmax(index - 255*2, 0)/255.0;
     }
 
-    const char *colour = TextFormat("\n\t\tvec3(%g, %g, %g)", r, g, b);
+    const char *colour = TextFormat("\n\t\tvec3(%f, %f, %f)", r, g, b);
 
     const char *block = TextFormat("\tdistance = Min(\n\t\tvec4(%s, %s),\n\t\tdistance);\n",
             TextFormat("sdf_round_box(\n\t\t\t%s,\n\t\t\t%s,\n\t\t\t%f)", position, size, obj->radius),
@@ -219,7 +218,7 @@ DynShader object_map(DA *da, size_t selection, bool colour_index) {
 }
 
 size_t object_at_pos(Vector2 pos, Camera *camera, DA *objects) {
-    DynShader shader = object_map(objects, (size_t)-1, true);
+    DynShader shader = object_map(objects, NO_SELECTION, true);
     update_shader_uniforms(&shader, camera);
 
     RenderTexture2D target = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
@@ -244,11 +243,13 @@ size_t object_at_pos(Vector2 pos, Camera *camera, DA *objects) {
 
     uint8_t *pixels = rlReadTexturePixels(target.texture.id, target.texture.width, target.texture.height, target.texture.format);
 
-    // TODO: restricted max see colour todo
-    uint8_t object_index = pixels[(int)(pos.x + target.texture.width*(target.texture.height - pos.y))*4];
+    const size_t index = (int)(pos.x + target.texture.width*(target.texture.height - pos.y))*4;
+    const uint8_t r = pixels[index];
+    const uint8_t g = pixels[index + 1];
+    const uint8_t b = pixels[index + 2];
+    const size_t object_id = r + g + b;
 
     free(pixels);
     UnloadRenderTexture(target);
-
-    return object_index;
+    return object_id;
 }
