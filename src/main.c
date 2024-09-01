@@ -58,7 +58,7 @@ int main(void) {
         if(tmp_shader.shader.id != 0)
             shader = tmp_shader;
 
-        if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && GetMousePosition().x > SIDEBAR_WIDTH) {
+        if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mpos.x > SIDEBAR_WIDTH) {
             if(selected != NO_SELECTION)
                 mouse_control = control(selected_object, GetMouseRay(mpos, camera));
 
@@ -70,9 +70,8 @@ int main(void) {
             }
         }
 
-        if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && mouse_control.kind) {
+        if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && mouse_control.kind)
             apply_manipulation(&mouse_control, selected_object, GetMouseRay(mpos, camera));
-        }
 
         BeginDrawing();
             ClearBackground(BLACK);

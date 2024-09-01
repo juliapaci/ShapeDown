@@ -5,6 +5,7 @@
 #include <raymath.h>
 #include <stdio.h>
 #include <string.h>
+#include <float.h>
 
 Object DEFAULT_OBJECT = {.size = (Vector3){1.0, 1.0, 1.0}};
 
@@ -96,7 +97,7 @@ void draw_gizmos(Object *obj) {
             ray.position,                                               \
             Vector3Add(ray.position, ray.direction));                   \
 
-#define TOUCH_CONTROL_POS(type) if(                                     \
+#define TOUCH_CONTROL_POS(type) else if(                                \
     GetRayCollisionSphere(ray, Vector3Add(pos, TYPE_OR_ZERO(type, 0.6)  \
                 ), .1).hit) {                                           \
                                                                         \
@@ -112,7 +113,7 @@ void draw_gizmos(Object *obj) {
     break;                                                              \
 }
 
-#define TOUCH_CONTROL_SIZE(type) if(                                    \
+#define TOUCH_CONTROL_SIZE(type) else if(                               \
     GetRayCollisionBox(ray, boundingBox_sized(Vector3Add(pos, (Vector3) \
                 {(type==0)*size.x,(type==1)*size.y,(type==2)*size.z}    \
                 ), 0.2)).hit) {                                         \
@@ -129,6 +130,22 @@ void draw_gizmos(Object *obj) {
 }
 
 struct Control control(Object *obj, Ray ray) {
+    const Vector3 pos = obj->position;
+    const Vector3 size = obj->size;
+
+    struct Control control = {0};
+
+    for(uint8_t i = 0; i < 3; i++) {
+        if(0) {}
+        TOUCH_CONTROL_POS(i)
+        TOUCH_CONTROL_SIZE(i)
+    }
+
+    return control;
+}
+
+// TODO: only works for first three (* three (group)) mouse controls
+void apply_manipulation(struct Control *control, Object *obj, Ray ray) {
     obj->size.x = fabs(obj->size.x);
     obj->size.y = fabs(obj->size.y);
     obj->size.z = fabs(obj->size.z);
@@ -136,30 +153,12 @@ struct Control control(Object *obj, Ray ray) {
     const Vector3 pos = obj->position;
     const Vector3 size = obj->size;
 
-    struct Control control = {0};
-
-    for(uint8_t i = 0; i < 3; i++) {
-        TOUCH_CONTROL_POS(i);
-        TOUCH_CONTROL_SIZE(i);
-    }
-
-    return control;
-}
-
-void apply_manipulation(struct Control *control, Object *obj, Ray ray) {
-    // TODO: dont need this here cause its already checked when its used in main
-    if(!control->kind)
-        return;
-
-    const Vector3 pos = obj->position;
-    const Vector3 size = obj->size;
-
     const uint8_t variant = (control->kind - 1) % 3;
     const Vector3 nearest = NEAREST_POINT(variant);
-    Vector3 *const target = (Vector3 *)(obj + (size_t)ceil((control->kind - 1) / 3.0) * sizeof(Vector3));
+    Vector3 *const target = (Vector3 *)(obj + (size_t)floor((control->kind - 1) / 3.0 - (FLT_MIN)) * sizeof(Vector3));
 
     *target = Vector3Add(*target, nearest);
-    *(float *)(target + variant) += control->adjustment;
+    *(float *)(target + variant*sizeof(float)) += control->adjustment;
 }
 
 DynShader action_keybinds(DA *da, int16_t selection) {

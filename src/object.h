@@ -42,6 +42,7 @@ void DA_push(DA *da, Object *obj);
 void DA_remove(DA *da, size_t index);
 void DA_free(DA *da);
 
+// Dynamic Shader
 typedef struct {
     Shader shader;
     // locations
