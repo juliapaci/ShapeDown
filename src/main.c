@@ -59,7 +59,8 @@ int main(void) {
             shader = tmp_shader;
 
         if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && GetMousePosition().x > SIDEBAR_WIDTH) {
-            mouse_control = control(selected_object, GetMouseRay(mpos, camera));
+            if(selected != NO_SELECTION)
+                mouse_control = control(selected_object, GetMouseRay(mpos, camera));
 
             if(!mouse_control.kind) {
                 selected = object_at_pos(mpos, &camera, &objects);

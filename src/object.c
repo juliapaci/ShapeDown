@@ -129,10 +129,6 @@ void draw_gizmos(Object *obj) {
 }
 
 struct Control control(Object *obj, Ray ray) {
-    // TODO: this shouldnt be here (hacky fix, should fix in main event loop)
-    if(obj == NULL)
-        return (struct Control){0};
-
     obj->size.x = fabs(obj->size.x);
     obj->size.y = fabs(obj->size.y);
     obj->size.z = fabs(obj->size.z);
@@ -151,59 +147,19 @@ struct Control control(Object *obj, Ray ray) {
 }
 
 void apply_manipulation(struct Control *control, Object *obj, Ray ray) {
-    const float adjustment = control->adjustment;
+    // TODO: dont need this here cause its already checked when its used in main
+    if(!control->kind)
+        return;
+
     const Vector3 pos = obj->position;
     const Vector3 size = obj->size;
-    const Vector3 nearest_temp = NEAREST_POINT(0);
 
-    switch(control->kind){
-        case CONTROL_NONE:
-            break;
-        case CONTROL_POS_X:
-            obj->position.x += adjustment + nearest_temp.x;
-            break;
-        case CONTROL_POS_Y:
-            obj->position.y += adjustment;
-            break;
-        case CONTROL_POS_Z:
-            obj->position.z += adjustment;
-            break;
-        case CONTROL_SCALE_X:
-            obj->size.x += adjustment;
-            break;
-        case CONTROL_SCALE_Y:
-            obj->size.y += adjustment;
-            break;
-        case CONTROL_SCALE_Z:
-            obj->size.z += adjustment;
-            break;
-        case CONTROL_ANGLE_X:
-            obj->rotation.x += adjustment;
-            break;
-        case CONTROL_ANGLE_Y:
-            obj->rotation.y += adjustment;
-            break;
-        case CONTROL_ANGLE_Z:
-            obj->rotation.z += adjustment;
-            break;
-        case CONTROL_COLOR_R:
-            obj->colour.r += adjustment;
-            break;
-        case CONTROL_COLOR_G:
-            obj->colour.g += adjustment;
-            break;
-        case CONTROL_COLOR_B:
-            obj->colour.b += adjustment;
-            break;
-        case CONTROL_TRANSLATE:
-        case CONTROL_ROTATE:
-        case CONTROL_SCALE:
-        case CONTROL_CORNER_RADIUS:
-        case CONTROL_ROTATE_CAMERA:
-        case CONTROL_BLOB_AMOUNT:
-        default:
-            break;
-    }
+    const uint8_t variant = (control->kind - 1) % 3;
+    const Vector3 nearest = NEAREST_POINT(variant);
+    Vector3 *const target = (Vector3 *)(obj + (size_t)ceil((control->kind - 1) / 3.0) * sizeof(Vector3));
+
+    *target = Vector3Add(*target, nearest);
+    *(float *)(target + variant) += control->adjustment;
 }
 
 DynShader action_keybinds(DA *da, int16_t selection) {
