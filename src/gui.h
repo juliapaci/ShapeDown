@@ -9,7 +9,7 @@
 void draw_gui(DA *objects, int16_t selection);
 
 void _draw_state(Object *obj);
-void _draw_list(size_t amount);
+void _draw_list(uint16_t amount);
 
 // meta
 void draw_button(Rectangle rect, const char *label);

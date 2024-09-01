@@ -26,6 +26,8 @@ typedef struct {
     bool subtract;
 } Object;
 
+extern Object DEFAULT_OBJECT;
+
 // TODO: use linked list instead
 
 // Dynamic Array
@@ -87,7 +89,7 @@ void draw_gizmos(Object *obj);
 // returns the users object manipulation
 struct Control control(Object *obj, Ray ray);
 // apply control to the object
-void apply_manipulation(struct Control *control, Object *obj);
+void apply_manipulation(struct Control *control, Object *obj, Ray ray);
 
 // adds an object, returns the reloaded shader
 DynShader add_object(DA *da, Object *obj, int16_t selection);

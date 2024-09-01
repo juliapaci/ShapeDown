@@ -12,7 +12,7 @@ void _draw_state(Object *obj) {
 
 }
 
-void _draw_list(size_t amount) {
+void _draw_list(uint16_t amount) {
     Rectangle rect = {
         .x = 10,
         .y = 10,
@@ -20,7 +20,7 @@ void _draw_list(size_t amount) {
         .height = 30
     };
 
-    for(size_t i = 0; i < amount; i++) {
+    for(uint16_t i = 0; i < amount; i++) {
         draw_button(rect, TextFormat("Shape %ld", i + 1));
         rect.y += rect.height + 10;
     }

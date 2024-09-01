@@ -10,6 +10,7 @@
 
 int main(void) {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+    SetTraceLogLevel(LOG_ERROR);
     InitWindow(800, 400, "ShapeDown");
 
     SetTargetFPS(60);
@@ -22,12 +23,14 @@ int main(void) {
         .fovy       = 45.0f
     };
 
-    // TODO: default object thing
-    Object obj = {0};
+    Object obj = DEFAULT_OBJECT;
     obj.size = (Vector3){1.0f, 1.0f, 1.0f};
 
     DA objects;
     DA_init(&objects, 50);
+
+    // TODO: fix first object is invisible for some reason
+    shader = add_object(&objects, &obj, NO_SELECTION);
     for(int i = 0; i < 15; i++) {
         obj.position.x += 10;
         shader = add_object(&objects, &obj, NO_SELECTION);
@@ -39,6 +42,10 @@ int main(void) {
     struct Control mouse_control = {0};
 
     while(!WindowShouldClose()) {
+        Vector2 mpos = IsCursorHidden() ?
+            (Vector2){GetScreenWidth()/2.0, GetScreenHeight()/2.0} :
+            GetMousePosition();
+
         // camera
         if(IsKeyPressed(KEY_LEFT_SHIFT)) {
             if(IsCursorHidden()) EnableCursor();
@@ -48,25 +55,22 @@ int main(void) {
 
         // controls
         DynShader tmp_shader = action_keybinds(&objects, selected);
-
         if(tmp_shader.shader.id != 0)
             shader = tmp_shader;
 
-        if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            Vector2 pos = IsCursorHidden() ?  // TODO: find better way of position when camera stuff
-                            (Vector2){GetScreenWidth()/2.0, GetScreenHeight()/2.0} :
-                            GetMousePosition();
+        if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && GetMousePosition().x > SIDEBAR_WIDTH) {
+            mouse_control = control(selected_object, GetMouseRay(mpos, camera));
 
-            mouse_control = control(selected_object, GetMouseRay(pos, camera));
-
-            if(mouse_control.kind) // editing selected object
-                apply_manipulation(&mouse_control, selected_object);
-            else { // selecting a new object
-                selected = object_at_pos(pos, &camera, &objects);
-                // TODO: check if object with selected id exists or find another qway of prevent background colour
+            if(!mouse_control.kind) {
+                selected = object_at_pos(mpos, &camera, &objects);
+                // TODO: check if object with selected id exists or find another qway of prevent picking background colour
 
                 selected_object = &objects.array[selected];
             }
+        }
+
+        if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && mouse_control.kind) {
+            apply_manipulation(&mouse_control, selected_object, GetMouseRay(mpos, camera));
         }
 
         BeginDrawing();

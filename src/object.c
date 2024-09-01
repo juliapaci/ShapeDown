@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <string.h>
 
+Object DEFAULT_OBJECT = {.size = (Vector3){1.0, 1.0, 1.0}};
+
 void DA_init(DA *da, size_t size) {
     da->array = malloc(size * sizeof(Object));
     da->capacity = size;
@@ -88,7 +90,7 @@ void draw_gizmos(Object *obj) {
 }
 
 // type = 0 - x, 1 - y, 2 - z
-#define NEAREST_AXES(type)                                              \
+#define NEAREST_POINT(type)                                             \
     NearestPointOnLine(pos,                                             \
             Vector3Add(pos, TYPE_OR_ZERO(type, 1.0)),                   \
             ray.position,                                               \
@@ -100,7 +102,7 @@ void draw_gizmos(Object *obj) {
                                                                         \
     control.kind = CONTROL_POS_X + type;                                \
                                                                         \
-    Vector3 nearest = NEAREST_AXES(type);                               \
+    Vector3 nearest = NEAREST_POINT(type);                              \
                                                                         \
     control.adjustment =                                                \
         (type == 0) * (pos.x - nearest.x) +                             \
@@ -116,7 +118,7 @@ void draw_gizmos(Object *obj) {
                 ), 0.2)).hit) {                                         \
     control.kind = CONTROL_SCALE_X + type;                              \
                                                                         \
-    Vector3 nearest = NEAREST_AXES(type);                               \
+    Vector3 nearest = NEAREST_POINT(type);                              \
                                                                         \
     control.adjustment =                                                \
         (type == 0) * (size.x - nearest.x) +                            \
@@ -131,10 +133,9 @@ struct Control control(Object *obj, Ray ray) {
     if(obj == NULL)
         return (struct Control){0};
 
-    // TODO: absolute or zero?
-    if(obj->size.x < 0) obj->size.x = 0;
-    if(obj->size.y < 0) obj->size.y = 0;
-    if(obj->size.z < 0) obj->size.z = 0;
+    obj->size.x = fabs(obj->size.x);
+    obj->size.y = fabs(obj->size.y);
+    obj->size.z = fabs(obj->size.z);
 
     const Vector3 pos = obj->position;
     const Vector3 size = obj->size;
@@ -149,45 +150,50 @@ struct Control control(Object *obj, Ray ray) {
     return control;
 }
 
-void apply_manipulation(struct Control *control, Object *obj) {
+void apply_manipulation(struct Control *control, Object *obj, Ray ray) {
+    const float adjustment = control->adjustment;
+    const Vector3 pos = obj->position;
+    const Vector3 size = obj->size;
+    const Vector3 nearest_temp = NEAREST_POINT(0);
+
     switch(control->kind){
         case CONTROL_NONE:
             break;
         case CONTROL_POS_X:
-            obj->position.x += control->adjustment;
+            obj->position.x += adjustment + nearest_temp.x;
             break;
         case CONTROL_POS_Y:
-            obj->position.y += control->adjustment;
+            obj->position.y += adjustment;
             break;
         case CONTROL_POS_Z:
-            obj->position.z += control->adjustment;
+            obj->position.z += adjustment;
             break;
         case CONTROL_SCALE_X:
-            obj->size.x += control->adjustment;
+            obj->size.x += adjustment;
             break;
         case CONTROL_SCALE_Y:
-            obj->size.y += control->adjustment;
+            obj->size.y += adjustment;
             break;
         case CONTROL_SCALE_Z:
-            obj->size.z += control->adjustment;
+            obj->size.z += adjustment;
             break;
         case CONTROL_ANGLE_X:
-            obj->rotation.x += control->adjustment;
+            obj->rotation.x += adjustment;
             break;
         case CONTROL_ANGLE_Y:
-            obj->rotation.y += control->adjustment;
+            obj->rotation.y += adjustment;
             break;
         case CONTROL_ANGLE_Z:
-            obj->rotation.z += control->adjustment;
+            obj->rotation.z += adjustment;
             break;
         case CONTROL_COLOR_R:
-            obj->colour.r += control->adjustment;
+            obj->colour.r += adjustment;
             break;
         case CONTROL_COLOR_G:
-            obj->colour.g += control->adjustment;
+            obj->colour.g += adjustment;
             break;
         case CONTROL_COLOR_B:
-            obj->colour.b += control->adjustment;
+            obj->colour.b += adjustment;
             break;
         case CONTROL_TRANSLATE:
         case CONTROL_ROTATE:
@@ -201,9 +207,7 @@ void apply_manipulation(struct Control *control, Object *obj) {
 }
 
 DynShader action_keybinds(DA *da, int16_t selection) {
-    // TODO: see main default obj
-    Object obj = {0};
-    obj.size = (Vector3){1.0f, 1.0f, 1.0f};
+    Object obj = DEFAULT_OBJECT;
 
     if(IsKeyPressed(KEY_SPACE))
         return add_object(da, &obj, selection);
