@@ -31,13 +31,9 @@ int main(void) {
 
     // TODO: fix first object is invisible for some reason
     shader = add_object(&objects, &obj, NO_SELECTION);
-    for(int i = 0; i < 15; i++) {
-        obj.position.x += 10;
-        shader = add_object(&objects, &obj, NO_SELECTION);
-    }
 
     // TODO: a state struct which contains selected, object da, etc.
-    int16_t selected = -1;
+    int16_t selected = NO_SELECTION;
     Object *selected_object = NULL;
     struct Control mouse_control = {0};
 
@@ -91,7 +87,7 @@ int main(void) {
 
             // gui hud
             draw_gui(&objects, selected);
-
+            DrawText(TextFormat("%d", (mouse_control.kind - 1) % 3), 1000, 1000, 30, BLUE);
             if(IsCursorHidden())
                 DrawCircle(GetScreenWidth()/2.0, GetScreenHeight()/2.0, 5.0, RAYWHITE);
         EndDrawing();

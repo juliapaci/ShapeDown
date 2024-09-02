@@ -98,8 +98,8 @@ Vector3 NearestPointOnLine(
     return (Vector3){
         p1.x + mua * p21.x,
         p1.y + mua * p21.y,
-        p1.z + mua * p21.z};
-
+        p1.z + mua * p21.z
+    };
 }
 
 void object_dynamic_assignment(DynShader *shader, Object *obj) {

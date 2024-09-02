@@ -7,15 +7,18 @@
 #include <string.h>
 #include <float.h>
 
-Object DEFAULT_OBJECT = {.size = (Vector3){1.0, 1.0, 1.0}};
+Object DEFAULT_OBJECT = {0, .size = (Vector3){1.0, 1.0, 1.0}};
 
-void DA_init(DA *da, size_t size) {
+void DA_init(DA *da, uint16_t size) {
     da->array = malloc(size * sizeof(Object));
     da->capacity = size;
     da->amount = 0;
 }
 
 void DA_push(DA *da, Object *obj) {
+    if(da->amount == 255*3)
+        return;
+
     if(++da->amount >= da->capacity) {
         da->capacity += da->amount;
         da->array = realloc(da->array, da->capacity * sizeof(Object));
@@ -24,8 +27,9 @@ void DA_push(DA *da, Object *obj) {
     da->array[da->amount] = *obj;
 }
 
-void DA_remove(DA *da, size_t index) {
-    for(int i = index; i < --da->amount; i++) {
+void DA_remove(DA *da, uint16_t index) {
+    da->amount--;
+    for(int i = index; i < da->amount; i++) {
         da->array[index] = da->array[index + 1];
     }
 }
@@ -155,9 +159,9 @@ void apply_manipulation(struct Control *control, Object *obj, Ray ray) {
 
     const uint8_t variant = (control->kind - 1) % 3;
     const Vector3 nearest = NEAREST_POINT(variant);
-    Vector3 *const target = (Vector3 *)(obj + (size_t)floor((control->kind - 1) / 3.0 - (FLT_MIN)) * sizeof(Vector3));
+    Vector3 *const target = (Vector3 *)(obj + (size_t)floor((control->kind - 1) / 3.0 - (FLT_MIN * (variant != 0))) * sizeof(Vector3));
 
-    *target = Vector3Add(*target, nearest);
+    *target = Vector3Subtract(nearest, *target);
     *(float *)(target + variant*sizeof(float)) += control->adjustment;
 }
 
@@ -179,6 +183,8 @@ DynShader add_object(DA *da, Object *obj, int16_t selection) {
 }
 
 DynShader remove_object(DA *da, int16_t selection) {
+    if(selection == NO_SELECTION)
+        return (DynShader){0};
     DA_remove(da, selection);
     return object_map(da, NO_SELECTION, false);
 }

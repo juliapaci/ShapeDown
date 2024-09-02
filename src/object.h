@@ -37,9 +37,9 @@ typedef struct {
     Object *array;
 } DA;
 
-void DA_init(DA *da, size_t size);
+void DA_init(DA *da, uint16_t size);
 void DA_push(DA *da, Object *obj);
-void DA_remove(DA *da, size_t index);
+void DA_remove(DA *da, uint16_t index);
 void DA_free(DA *da);
 
 // Dynamic Shader
