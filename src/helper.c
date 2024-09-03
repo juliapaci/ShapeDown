@@ -152,6 +152,7 @@ const char *object_static_map_entry(Object *obj, int16_t index) {
         g = obj->colour.g/255.0;
         b = obj->colour.b/255.0;
     } else {
+        // TODO: could also use another buffer like depth or something
         r = index/255.0;
         g = fmax(index - 255, 0)/255.0;
         b = fmax(index - 255*2, 0)/255.0;
@@ -194,13 +195,13 @@ DynShader object_map(DA *da, int16_t selection, bool colour_index) {
     _append(&map, sig);
     _append(&map, base);
     _append(&map, map_start);
-    for(size_t i = 0; i < da->amount; i++) {
+    for(uint16_t i = 0; i < da->amount; i++) {
         const char *entry = NULL;
 
-        if(i == selection)
-            entry = object_dynamic_map_entry(da->array + i);
-        else
+        if(i != selection)
             entry = object_static_map_entry(da->array + i, colour_index * (i + 1) - 1);
+        else
+            entry = object_dynamic_map_entry(da->array + i);
 
         _append(&map, entry);
     }
@@ -217,7 +218,8 @@ DynShader object_map(DA *da, int16_t selection, bool colour_index) {
     return shader;
 }
 
-int16_t object_at_pos(Vector2 pos, Camera *camera, DA *objects) {
+// TODO: check if object with selected id exists or find another qway of prevent picking background colour
+int16_t object_at_pos(DA *objects, Vector2 pos, Camera *camera) {
     DynShader shader = object_map(objects, NO_SELECTION, true);
     update_shader_uniforms(&shader, camera);
 

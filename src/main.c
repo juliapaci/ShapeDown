@@ -12,25 +12,20 @@ int main(void) {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     SetTraceLogLevel(LOG_ERROR);
     InitWindow(800, 400, "ShapeDown");
-
     SetTargetFPS(60);
 
-    DynShader shader;
+    // TODO: fix camera beinga bit offset (for gizmos)
     Camera camera = {
         .position   = (Vector3) {10.0f, 10.0f, 10.0f},
         .target     = (Vector3) {0.0f, 0.0f, 0.0f},
         .up         = (Vector3) {0.0f, 1.0f, 0.0f},
-        .fovy       = 45.0f
+        .fovy       = 45.0f,
+        .projection = CAMERA_PERSPECTIVE
     };
-
-    Object obj = DEFAULT_OBJECT;
-    obj.size = (Vector3){1.0f, 1.0f, 1.0f};
-
     DA objects;
     DA_init(&objects, 50);
-
-    // TODO: fix first object is invisible for some reason
-    shader = add_object(&objects, &obj, NO_SELECTION);
+    // TODO: first object is invisible?
+    DynShader shader = object_map(&objects, NO_SELECTION, false);
 
     // TODO: a state struct which contains selected, object da, etc.
     int16_t selected = NO_SELECTION;
@@ -59,10 +54,11 @@ int main(void) {
                 mouse_control = control(selected_object, GetMouseRay(mpos, camera));
 
             if(!mouse_control.kind) {
-                selected = object_at_pos(mpos, &camera, &objects);
-                // TODO: check if object with selected id exists or find another qway of prevent picking background colour
+                selected = object_at_pos(&objects, mpos, &camera);
 
                 selected_object = &objects.array[selected];
+                // TODO: could just do `object_dynamic_assignment` and make the previously selected object static
+                shader = object_map(&objects, selected, false);
             }
         }
 
@@ -87,7 +83,7 @@ int main(void) {
 
             // gui hud
             draw_gui(&objects, selected);
-            DrawText(TextFormat("%d", (mouse_control.kind - 1) % 3), 1000, 1000, 30, BLUE);
+
             if(IsCursorHidden())
                 DrawCircle(GetScreenWidth()/2.0, GetScreenHeight()/2.0, 5.0, RAYWHITE);
         EndDrawing();

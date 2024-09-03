@@ -155,14 +155,12 @@ void apply_manipulation(struct Control *control, Object *obj, Ray ray) {
     obj->size.z = fabs(obj->size.z);
 
     const Vector3 pos = obj->position;
-    const Vector3 size = obj->size;
 
     const uint8_t variant = (control->kind - 1) % 3;
     const Vector3 nearest = NEAREST_POINT(variant);
-    Vector3 *const target = (Vector3 *)(obj + (size_t)floor((control->kind - 1) / 3.0 - (FLT_MIN * (variant != 0))) * sizeof(Vector3));
+    Vector3 *const target = (Vector3 *const)((Vector3 *const)obj + (size_t)floor((control->kind - 1) / 3.0 - (FLT_MIN * (variant != 0))));
 
-    *target = Vector3Subtract(nearest, *target);
-    *(float *)(target + variant*sizeof(float)) += control->adjustment;
+    *(float *const)((float *const)target + variant) = control->adjustment + *(float *const)((float *const)&nearest + variant) ;
 }
 
 DynShader action_keybinds(DA *da, int16_t selection) {
