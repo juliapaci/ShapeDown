@@ -108,9 +108,9 @@ void object_dynamic_assignment(DynShader *shader, Object *obj) {
         obj->position.y,
         obj->position.z,
 
-        obj->size.x,
-        obj->size.y,
-        obj->size.z,
+        fabs(obj->size.x),
+        fabs(obj->size.y),
+        fabs(obj->size.z),
 
         obj->rotation.x,
         obj->rotation.y,
@@ -144,7 +144,7 @@ void object_dynamic_assignment(DynShader *shader, Object *obj) {
 
 const char *object_static_map_entry(Object *obj, int16_t index) {
     const char *position = TextFormat("point - vec3(%f, %f, %f)", obj->position.x, obj->position.y, obj->position.z);
-    const char *size = TextFormat("vec3(%f, %f, %f)", obj->size.x, obj->size.y, obj->size.z);
+    const char *size = TextFormat("vec3(%f, %f, %f)", fabs(obj->size.x), fabs(obj->size.y), fabs(obj->size.z));
 
     double r, g, b;
     if(index == -1) {

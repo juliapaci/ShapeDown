@@ -8,6 +8,14 @@
 #include "helper.h"
 #include "gui.h"
 
+// TODO: could just keep delta selected in ev loop instead
+void set_selected(DA *objects, int16_t *selected, DynShader *shader, Object **selected_object, int16_t selection) {
+    *selected = selection;
+    *selected_object = &objects->array[*selected];
+    // TODO: could just do `object_dynamic_assignment` and make the previously selected object static
+    *shader = object_map(objects, *selected, false);
+}
+
 int main(void) {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     SetTraceLogLevel(LOG_ERROR);
@@ -53,16 +61,11 @@ int main(void) {
             if(selected != NO_SELECTION)
                 mouse_control = control(selected_object, GetMouseRay(mpos, camera));
 
-            if(!mouse_control.kind) {
-                selected = object_at_pos(&objects, mpos, &camera);
-
-                selected_object = &objects.array[selected];
-                // TODO: could just do `object_dynamic_assignment` and make the previously selected object static
-                shader = object_map(&objects, selected, false);
-            }
+            if(!mouse_control.kind)
+                set_selected(&objects, &selected, &shader, &selected_object, object_at_pos(&objects, mpos, &camera));
         }
 
-        if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && mouse_control.kind)
+        if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && mouse_control.kind && mpos.x > SIDEBAR_WIDTH)
             apply_manipulation(&mouse_control, selected_object, GetMouseRay(mpos, camera));
 
         BeginDrawing();
@@ -82,7 +85,9 @@ int main(void) {
             EndMode3D();
 
             // gui hud
-            draw_gui(&objects, selected);
+            int16_t clicked = draw_gui(&objects, selected);
+            if(clicked != NO_SELECTION)
+                set_selected(&objects, &selected, &shader, &selected_object, clicked);
 
             if(IsCursorHidden())
                 DrawCircle(GetScreenWidth()/2.0, GetScreenHeight()/2.0, 5.0, RAYWHITE);
