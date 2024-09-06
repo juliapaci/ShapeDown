@@ -22,7 +22,7 @@ int main(void) {
     InitWindow(800, 400, "ShapeDown");
     SetTargetFPS(60);
 
-    // TODO: fix camera beinga bit offset (for gizmos)
+    // TODO: fix camera beinga bit offset (for gizmos) (might be a shader camera ray offset)
     Camera camera = {
         .position   = (Vector3) {10.0f, 10.0f, 10.0f},
         .target     = (Vector3) {0.0f, 0.0f, 0.0f},
