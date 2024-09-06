@@ -6,6 +6,50 @@
 
 #define IS_PRESSED(rect) (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && _rect_contains(rect, GetMousePosition()))
 
+#define DRAW_TITLE(rect, label)                                     \
+    DrawText(label, rect.x, rect.y, STATE_TEXT_SIZE, ACCENT_COLOUR);\
+    rect.y += rect.height + STATE_PAD_Y
+
+// TODO: should advance by string len and have just one generic advance macro
+#define ADVANCE_INPUT(rect) rect.x += rect.width + 3*STATE_PAD_X
+#define CONCLUDE_STATE(rect)            \
+    rect.y += STATE_PAD_Y + rect.height;\
+    rect.x = STATE_PAD_X
+
+#define DRAW_SINGLE_INPUT(rect, data)\
+    DRAW_TITLE(rect, #data);         \
+    _draw_input(rect, #data, data);  \
+    CONCLUDE_STATE(rect)
+
+#define DRAW_STRUCT_3(rect, struct, f1, f2, f3) \
+    DRAW_TITLE(rect, #struct);          \
+    _draw_input(rect, #f1, struct.f1);  \
+    ADVANCE_INPUT(rect);                \
+    _draw_input(rect, #f2, struct.f2);  \
+    ADVANCE_INPUT(rect);                \
+    _draw_input(rect, #f3, struct.f3);  \
+    CONCLUDE_STATE(rect)
+
+#define DRAW_VEC3(rect, vec3) DRAW_STRUCT_3(rect, vec3, x, y, z)
+#define DRAW_COLOUR_RGB(rect, colour) DRAW_STRUCT_3(rect, colour, r, g, b)
+
+#define CHECKBOX(rect, label, value) if(_draw_checkbox(rect, label, value)) value = !value
+#define ADVANCE_CHECKBOX(rect) rect.x += rect.width + INPUT_PAD_X
+#define DRAW_CHECKBOX(rect, data)   \
+    DRAW_TITLE(rect, #data);        \
+    CHECKBOX(rect, #data, data);
+#define DRAW_TRI_CHECKBOX(rect, data)   \
+    DRAW_TITLE(rect, #data);            \
+    CHECKBOX(rect, "x", data.x);        \
+    ADVANCE_CHECKBOX(rect);             \
+    CHECKBOX(rect, "y", data.y);        \
+    ADVANCE_CHECKBOX(rect);             \
+    CHECKBOX(rect, "z", data.z);        \
+    ADVANCE_CHECKBOX(rect);             \
+    CONCLUDE_STATE(rect)
+
+
+
 #define PRIMARY_COLOUR (Color){61, 61, 61, 255}
 #define ACCENT_COLOUR (Color){70, 70, 70, 255}
 #define SELECTED_COLOUR WHITE

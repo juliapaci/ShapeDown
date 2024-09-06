@@ -23,72 +23,13 @@ void _draw_state(Object *obj, uint16_t offset) {
         .height = INPUT_HEIGHT
     };
 
-    // TODO: can maybe do some reflection here
-
-    // pos
-    DrawText("position", field.x, field.y, STATE_TEXT_SIZE, ACCENT_COLOUR);
-    field.y += field.height + STATE_PAD_Y;
-    _draw_input(field, "x", obj->position.x);
-    field.x += field.width + 3*STATE_PAD_X;
-    _draw_input(field, "y", obj->position.y);
-    field.x += field.width + 3*STATE_PAD_X;
-    _draw_input(field, "z", obj->position.z);
-
-    field.y += STATE_PAD_Y + field.height;
-    field.x = STATE_PAD_X;
-
-    // size
-    DrawText("size", field.x, field.y, STATE_TEXT_SIZE, ACCENT_COLOUR);
-    field.y += field.height + STATE_PAD_Y;
-    _draw_input(field, "x", obj->size.x);
-    field.x += field.width + INPUT_PAD_X;
-    _draw_input(field, "y", obj->size.y);
-    field.x += field.width + INPUT_PAD_X;
-    _draw_input(field, "z", obj->size.z);
-
-    field.y += STATE_PAD_Y + field.height;
-    field.x = STATE_PAD_X;
-
-    // rotation
-    DrawText("rotation", field.x, field.y, STATE_TEXT_SIZE, ACCENT_COLOUR);
-    field.y += field.height + STATE_PAD_Y;
-    _draw_input(field, "x", obj->rotation.x);
-    field.x += field.width + INPUT_PAD_X;
-    _draw_input(field, "y", obj->rotation.y);
-    field.x += field.width + INPUT_PAD_X;
-    _draw_input(field, "z", obj->rotation.z);
-
-    field.y += STATE_PAD_Y + field.height;
-    field.x = STATE_PAD_X;
-
-    // radius
-    DrawText("radius", field.x, field.y, STATE_TEXT_SIZE, ACCENT_COLOUR);
-    field.y += field.height + STATE_PAD_Y;
-    _draw_input(field, "r", obj->radius);
-
-    field.y += STATE_PAD_Y + field.height;
-    field.x = STATE_PAD_X;
-
-    // blobbyness
-    DrawText("blobbyness", field.x, field.y, STATE_TEXT_SIZE, ACCENT_COLOUR);
-    field.y += field.height + STATE_PAD_Y;
-    _draw_input(field, "b", obj->blobbyness);
-
-    field.y += STATE_PAD_Y + field.height;
-    field.x = STATE_PAD_X;
-
-    // colour
-    field.width = INPUT_SINGLE_WIDTH;
-    DrawText("colour", field.x, field.y, STATE_TEXT_SIZE, ACCENT_COLOUR);
-    field.y += field.height + STATE_PAD_Y;
-    _draw_input(field, "r", obj->colour.r);
-    field.x += field.width + INPUT_PAD_X;
-    _draw_input(field, "g", obj->colour.g);
-    field.x += field.width + INPUT_PAD_X;
-    _draw_input(field, "b", obj->colour.b);
-
-    field.y += STATE_PAD_Y + field.height;
-    field.x = STATE_PAD_X;
+    DRAW_VEC3(field, obj->position);
+    DRAW_VEC3(field, obj->size);
+    DRAW_VEC3(field, obj->rotation);
+    DRAW_SINGLE_INPUT(field, obj->radius);
+    DRAW_SINGLE_INPUT(field, obj->blobbyness);
+    field.width = 3*INPUT_SINGLE_WIDTH;
+    DRAW_COLOUR_RGB(field, obj->colour);
 
     Rectangle checkbox = {
         .x = field.x,
@@ -97,22 +38,8 @@ void _draw_state(Object *obj, uint16_t offset) {
         .height = CHECKBOX_SIZE
     };
 
-    // mirror
-    DrawText("mirror", checkbox.x, checkbox.y, STATE_TEXT_SIZE, ACCENT_COLOUR);
-    checkbox.y += checkbox.height + STATE_PAD_Y;
-    obj->mirror.x = _draw_checkbox(checkbox, "x", obj->mirror.x);
-    checkbox.x += checkbox.width + INPUT_PAD_X;
-    obj->mirror.y = _draw_checkbox(checkbox, "y", obj->mirror.y);
-    checkbox.x += checkbox.width + INPUT_PAD_X;
-    obj->mirror.z = _draw_checkbox(checkbox, "z", obj->mirror.z);
-
-    checkbox.y += STATE_PAD_Y + checkbox.height;
-    checkbox.x = STATE_PAD_X;
-
-    // subtract
-    DrawText("subtract", checkbox.x, checkbox.y, STATE_TEXT_SIZE, ACCENT_COLOUR);
-    checkbox.y += checkbox.height + STATE_PAD_Y;
-    obj->subtract = _draw_checkbox(checkbox, "s", obj->subtract);
+    DRAW_TRI_CHECKBOX(checkbox, obj->mirror);
+    DRAW_CHECKBOX(checkbox, obj->subtract);
 }
 
 int16_t _draw_list(uint16_t amount, int16_t selection) {
