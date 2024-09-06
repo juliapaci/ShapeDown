@@ -57,78 +57,66 @@ void update_shader_uniforms(DynShader *shader, Camera *camera) {
     // object_props is set somewhere else
 }
 
+#define DRAW_POS_CONTROL(axis, pos)                             \
+    DrawLine3D(pos, Vector3Add(pos, TYPE_OR_ZERO(axis, 0.5)),   \
+            TYPE_OR_ZERO_COLOUR(axis));                         \
+    DrawCylinderEx(                                             \
+        Vector3Add(pos, TYPE_OR_ZERO(axis, 0.5)),               \
+        Vector3Add(pos, TYPE_OR_ZERO(axis, 0.7)),               \
+        0.1, 0, 12, TYPE_OR_ZERO_COLOUR(axis))
+
+#define DRAW_SIZE_CONTROL(axis, pos, size) DrawCube(Vector3Add(pos, TYPE_OR_ZERO_VEC3(axis, size)), .1,.1,.1, TYPE_OR_ZERO_COLOUR(axis))
+
+#define DRAW_ROT_CONTROL(axis, pos) DrawCircle3D(pos, RING_RADIUS, (Vector3){1.0 * (axis == Z), 1.0 * (axis == Y), 0.0}, (axis != X) * 90.0, TYPE_OR_ZERO_COLOUR(axis))
+
 void draw_gizmos(Object *obj) {
     const Vector3 pos = obj->position;
     const Vector3 size = obj->size;
 
     // TODO: axes
 
-    // position
-    // x
-    DrawLine3D(pos, Vector3Add(pos, (Vector3){0.5,0,0}), RED);
-    DrawCylinderEx(
-        Vector3Add(pos, (Vector3){0.5,0,0}),
-        Vector3Add(pos, (Vector3){.7,0,0}),
-        0.1, 0, 12, RED
-    );
-
-    // y
-    DrawLine3D(pos, Vector3Add(pos, (Vector3){0,0.5,0}), GREEN);
-    DrawCylinderEx(
-        Vector3Add(obj->position, (Vector3){0,0.5,0}),
-        Vector3Add(obj->position, (Vector3){0,0.7,0}),
-        0.1, 0, 12, GREEN
-    );
-
-    // z
-    DrawLine3D(pos, Vector3Add(pos, (Vector3){0,0,0.5}), BLUE);
-    DrawCylinderEx(
-        Vector3Add(obj->position, (Vector3){0,0,0.5}),
-        Vector3Add(obj->position, (Vector3){0,0,0.7}),
-        0.1, 0, 12, BLUE
-    );
-
-    // sizes
-    DrawCube(Vector3Add(pos, (Vector3){size.x,0,0}), .1,.1,.1, RED);
-    DrawCube(Vector3Add(pos, (Vector3){0,size.y,0}), .1,.1,.1, GREEN);
-    DrawCube(Vector3Add(pos, (Vector3){0,0,size.z}), .1,.1,.1, BLUE);
+    for(uint8_t axis = 0; axis < 3; axis++) {
+        DRAW_POS_CONTROL(axis, pos);
+        DRAW_SIZE_CONTROL(axis, pos, size);
+        DRAW_ROT_CONTROL(axis,  pos);
+    }
 }
 
-// type = 0 - x, 1 - y, 2 - z
-#define NEAREST_POINT(type)                                             \
+// type = `Axis` (0 - x, 1 - y, 2 - z)
+#define NEAREST_POINT(axis)                                             \
     NearestPointOnLine(pos,                                             \
-            Vector3Add(pos, TYPE_OR_ZERO(type, 1.0)),                   \
+            Vector3Add(pos, TYPE_OR_ZERO(axis, 1.0)),                   \
             ray.position,                                               \
             Vector3Add(ray.position, ray.direction));                   \
 
-#define TOUCH_CONTROL_POS(type) else if(                                \
-    GetRayCollisionSphere(ray, Vector3Add(pos, TYPE_OR_ZERO(type, 0.6)  \
+#define TOUCH_CONTROL_POS(axis) else if(                                \
+    GetRayCollisionSphere(ray, Vector3Add(pos, TYPE_OR_ZERO(axis, 0.6)  \
                 ), .1).hit) {                                           \
                                                                         \
-    control.kind = CONTROL_POS_X + type;                                \
+    control.kind = CONTROL_POS_X + axis;                                \
                                                                         \
-    Vector3 nearest = NEAREST_POINT(type);                              \
+    Vector3 nearest = NEAREST_POINT(axis);                              \
                                                                         \
     control.adjustment =                                                \
-        (type == 0) * (pos.x - nearest.x) +                             \
-        (type == 1) * (pos.y - nearest.y) +                             \
-        (type == 2) * (pos.z - nearest.z);                              \
+        (axis == X) * (pos.x - nearest.x) +                             \
+        (axis == Y) * (pos.y - nearest.y) +                             \
+        (axis == Z) * (pos.z - nearest.z);                              \
                                                                         \
     break;                                                              \
 }
 
-#define TOUCH_CONTROL_SIZE(type) else if(                               \
+#define TOUCH_CONTROL_SIZE(axis) else if(                               \
     GetRayCollisionBox(ray, boundingBox_sized(Vector3Add(pos, (Vector3) \
-                {(type==0)*size.x,(type==1)*size.y,(type==2)*size.z}    \
+                {(axis==X)*size.x,(axis==Y)*size.y,(axis==Z)*size.z}    \
                 ), 0.2)).hit) {                                         \
-    control.kind = CONTROL_SCALE_X + type;                              \
+    control.kind = CONTROL_SCALE_X + axis;                              \
                                                                         \
-    Vector3 nearest = NEAREST_POINT(type);                              \
+    Vector3 nearest = NEAREST_POINT(axis);                              \
                                                                         \
     control.adjustment =                                                \
-        (type == 0) * (size.x - nearest.x) +                            \
-        (type == 1) * (size.y - nearest.y) +                            \
-        (type == 2) * (size.z - nearest.z);                             \
+        (axis == X) * (size.x - nearest.x) +                            \
+        (axis == Y) * (size.y - nearest.y) +                            \
+        (axis == Z) * (size.z - nearest.z);                             \
                                                                         \
     break;                                                              \
 }
@@ -139,10 +127,10 @@ struct Control control(Object *obj, Ray ray) {
 
     struct Control control = {0};
 
-    for(uint8_t i = 0; i < 3; i++) {
-        if(0) {}
-        TOUCH_CONTROL_POS(i)
-        TOUCH_CONTROL_SIZE(i)
+    for(uint8_t axis = 0; axis < 3; axis++) {
+        if(false) {}
+        TOUCH_CONTROL_POS(axis)
+        TOUCH_CONTROL_SIZE(axis)
     }
 
     return control;

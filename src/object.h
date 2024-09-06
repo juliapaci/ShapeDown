@@ -6,6 +6,13 @@
 #include <stdlib.h>
 
 #define TYPE_OR_ZERO(type, val) (Vector3){(type == 0) * val, (type == 1) * val, (type == 2) * val}
+#define TYPE_OR_ZERO_VEC3(type, vec3) (Vector3){(type == 0) * vec3.x, (type == 1) * vec3.y, (type == 2) * vec3.z}
+#define TYPE_OR_ZERO_COLOUR(type) ((axis==X) ? RED : (axis==Y) ? GREEN : BLUE)
+enum Axis {
+    X, Y, Z
+};
+
+#define RING_RADIUS 2
 
 typedef struct {
     Vector3 position;
