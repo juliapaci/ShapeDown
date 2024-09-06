@@ -1,6 +1,8 @@
 #include "gui.h"
 #include "helper.h"
+
 #include <raylib.h>
+#include <string.h>
 
 bool _rect_contains(Rectangle rect, Vector2 pos) {
     return rect.x <= pos.x && rect.x + rect.width >= pos.x
@@ -23,13 +25,13 @@ void _draw_state(Object *obj, uint16_t offset) {
         .height = INPUT_HEIGHT
     };
 
-    DRAW_VEC3(field, obj->position);
-    DRAW_VEC3(field, obj->size);
-    DRAW_VEC3(field, obj->rotation);
-    DRAW_SINGLE_INPUT(field, obj->radius);
-    DRAW_SINGLE_INPUT(field, obj->blobbyness);
+    DRAW_VEC3(obj, field, position);
+    DRAW_VEC3(obj, field, size);
+    DRAW_VEC3(obj, field, rotation);
+    DRAW_SINGLE_INPUT(obj, field, radius);
+    DRAW_SINGLE_INPUT(obj, field, blobbyness);
     field.width = 3*INPUT_SINGLE_WIDTH;
-    DRAW_COLOUR_RGB(field, obj->colour);
+    DRAW_COLOUR_RGB(obj, field, colour);
 
     Rectangle checkbox = {
         .x = field.x,
@@ -38,8 +40,8 @@ void _draw_state(Object *obj, uint16_t offset) {
         .height = CHECKBOX_SIZE
     };
 
-    DRAW_TRI_CHECKBOX(checkbox, obj->mirror);
-    DRAW_CHECKBOX(checkbox, obj->subtract);
+    DRAW_TRI_CHECKBOX(obj, checkbox, mirror);
+    DRAW_CHECKBOX(obj, checkbox, subtract);
 }
 
 int16_t _draw_list(uint16_t amount, int16_t selection) {
@@ -70,7 +72,7 @@ bool _draw_button(Rectangle rect, const char *label) {
 
 bool _draw_checkbox(Rectangle rect, const char *label, bool checked) {
     DrawText(label, rect.x + TEXT_PAD_X, rect.y, CHECKBOX_TEXT_SIZE, ACCENT_COLOUR);
-    rect.x += INPUT_LABEL_PAD;
+    rect.x += (strlen(label) != 1) * MeasureTextEx(GetFontDefault(), label, INPUT_TEXT_SIZE, 0).x + INPUT_LABEL_PAD;
 
     if(checked)
         DrawRectangleRec(rect, ACCENT_COLOUR);
@@ -81,7 +83,7 @@ bool _draw_checkbox(Rectangle rect, const char *label, bool checked) {
 
 bool _draw_input(Rectangle rect, const char *label, float value) {
     DrawText(label, rect.x, rect.y, INPUT_TEXT_SIZE, ACCENT_COLOUR);
-    rect.x += INPUT_LABEL_PAD;
+    rect.x += (strlen(label) != 1) * MeasureTextEx(GetFontDefault(), label, INPUT_TEXT_SIZE, 0).x + INPUT_LABEL_PAD;
 
     DrawRectangleRec(rect, ACCENT_COLOUR);
     DrawText(TextFormat("%" INPUT_PRECISION "f", value), rect.x + TEXT_PAD_X, rect.y + TEXT_PAD_Y, INPUT_TEXT_SIZE, PRIMARY_COLOUR);
