@@ -23,6 +23,8 @@ Vector3 NearestPointOnLine(
     Vector3 p4,
     Vector3 p3
 );
+// Find the nearest point on sphere
+Vector3 nearest_point_sphere(Vector3 p, Vector3 c, float r);
 
 // sets the dynamic selection uniform to selected objects properties
 void object_dynamic_assignment(DynShader *shader, Object *obj);

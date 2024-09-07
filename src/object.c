@@ -83,7 +83,7 @@ void draw_gizmos(Object *obj) {
 }
 
 // type = `Axis` (0 - x, 1 - y, 2 - z)
-#define NEAREST_POINT(axis)                                             \
+#define NEAREST_POINT_LINE(axis)                                        \
     NearestPointOnLine(pos,                                             \
             Vector3Add(pos, TYPE_OR_ZERO(axis, 1.0)),                   \
             ray.position,                                               \
@@ -95,7 +95,7 @@ void draw_gizmos(Object *obj) {
                                                                         \
     control.kind = CONTROL_POS_X + axis;                                \
                                                                         \
-    Vector3 nearest = NEAREST_POINT(axis);                              \
+    Vector3 nearest = NEAREST_POINT_LINE(axis);                         \
                                                                         \
     control.adjustment =                                                \
         (axis == X) * (pos.x - nearest.x) +                             \
@@ -111,12 +111,30 @@ void draw_gizmos(Object *obj) {
                 ), 0.2)).hit) {                                         \
     control.kind = CONTROL_SCALE_X + axis;                              \
                                                                         \
-    Vector3 nearest = NEAREST_POINT(axis);                              \
+    Vector3 nearest = NEAREST_POINT_LINE(axis);                         \
                                                                         \
     control.adjustment =                                                \
         (axis == X) * (size.x - nearest.x) +                            \
         (axis == Y) * (size.y - nearest.y) +                            \
         (axis == Z) * (size.z - nearest.z);                             \
+                                                                        \
+    break;                                                              \
+}
+
+#define TOUCH_CONTROL_ROT(axis, rs) else if(                            \
+        rs.hit &&                                                       \
+            axis == X ? fabs(rs.normal.z) < 0.1                         \
+            : axis == Y ? fabs(rs.normal.x) < 0.1                       \
+            : fabs(rs.normal.y) < 0.1                                   \
+        ) {                                                             \
+    control.kind = CONTROL_ANGLE_X + axis;                              \
+                                                                        \
+    Vector3 nearest = nearest_point_sphere(ray.position, pos, RING_RADIUS);\
+                                                                        \
+    control.adjustment =                                                \
+        (axis == X) * (pos.x - nearest.x) +                             \
+        (axis == Y) * (pos.y - nearest.y) +                             \
+        (axis == Z) * (pos.z - nearest.z);                              \
                                                                         \
     break;                                                              \
 }
@@ -127,21 +145,22 @@ struct Control control(Object *obj, Ray ray) {
 
     struct Control control = {0};
 
+    RayCollision rs = GetRayCollisionSphere(ray, pos, RING_RADIUS);
     for(uint8_t axis = 0; axis < 3; axis++) {
         if(false) {}
         TOUCH_CONTROL_POS(axis)
         TOUCH_CONTROL_SIZE(axis)
+        TOUCH_CONTROL_ROT(axis, rs)
     }
 
     return control;
 }
 
-// TODO: only works for first three (* three (group)) mouse controls
 void apply_manipulation(struct Control *control, Object *obj, Ray ray) {
     const Vector3 pos = obj->position;
 
     const uint8_t variant = (control->kind - 1) % 3;
-    const Vector3 nearest = NEAREST_POINT(variant);
+    const Vector3 nearest = /* variant ==  */NEAREST_POINT_LINE(variant);
     Vector3 *const target = (Vector3 *const)((Vector3 *const)obj + (size_t)floor((control->kind - 1) / 3.0 - (FLT_MIN * (variant != 0))));
 
     *(float *const)((float *const)target + variant) = control->adjustment + *(float *const)((float *const)&nearest + variant);

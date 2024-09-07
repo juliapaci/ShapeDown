@@ -102,6 +102,11 @@ Vector3 NearestPointOnLine(
     };
 }
 
+Vector3 nearest_point_sphere(Vector3 p, Vector3 c, float r) {
+    Vector3 dir = Vector3Normalize(Vector3Subtract(c, p));
+    return Vector3Add(c, Vector3Scale(dir, r));
+}
+
 void object_dynamic_assignment(DynShader *shader, Object *obj) {
     const float properties[3*5] = {
         obj->position.x,
