@@ -1,6 +1,7 @@
 #include <raylib.h>
 #include <raymath.h>
 #include <string.h>
+#include <float.h>
 
 #include <stdio.h>
 
@@ -38,6 +39,7 @@ int main(void) {
     int16_t selected = NO_SELECTION;
     Object *selected_object = NULL;
     struct Control mouse_control = {0};
+    ControlKind state_control = CONTROL_NONE;
 
     while(!WindowShouldClose()) {
         Vector2 mpos = IsCursorHidden() ?
@@ -62,11 +64,20 @@ int main(void) {
 
             if(!mouse_control.kind)
                 set_selected(&objects, &selected, &shader, &selected_object, object_at_pos(&objects, mpos, &camera));
-        } else if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
+        } else if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
             mouse_control.kind = CONTROL_NONE;
-
-        if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && mouse_control.kind && mpos.x > SIDEBAR_WIDTH)
-            apply_manipulation(&mouse_control, selected_object, GetMouseRay(mpos, camera));
+            state_control = CONTROL_NONE;
+        }
+        if(IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+            if(mouse_control.kind && mpos.x > SIDEBAR_WIDTH)
+                apply_manipulation(&mouse_control, selected_object, GetMouseRay(mpos, camera));
+            else if(state_control) {
+                const uint8_t variant = (state_control - 1) % 3;
+                const uint8_t kind = floor((state_control - 1) / 3.0 - (FLT_MIN * (variant != 0)));
+                // *((uint8_t *)selected_object + ((kind <= 2) ? state_control * sizeof(float) : 0)) += GetMouseDelta().x;
+                selected_object->position.x += GetMouseDelta().x / 100.0;
+            }
+        }
 
         BeginDrawing();
             ClearBackground(BLACK);
@@ -86,8 +97,12 @@ int main(void) {
 
             // gui hud
             int16_t clicked = draw_gui(&objects, selected);
-            if(clicked != NO_SELECTION)
-                set_selected(&objects, &selected, &shader, &selected_object, clicked < objects.amount ? clicked :clicked - objects.amount);
+            if(clicked != NO_SELECTION) {
+                if(clicked < objects.amount)
+                    set_selected(&objects, &selected, &shader, &selected_object, clicked);
+                else
+                    state_control = (clicked - objects.amount) + 1;
+            }
 
             if(IsCursorHidden())
                 DrawCircle(GetScreenWidth()/2.0, GetScreenHeight()/2.0, 5.0, RAYWHITE);

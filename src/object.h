@@ -37,7 +37,7 @@ typedef struct {
 
 extern Object DEFAULT_OBJECT;
 
-// TODO: use linked list instead
+// TODO: maybe use linked list instead?
 
 // Dynamic Array
 typedef struct {
@@ -71,7 +71,7 @@ typedef enum {
     CONTROL_SCALE_Z,
     CONTROL_ANGLE_X,
     CONTROL_ANGLE_Y,
-    CONTROL_ANGLE_Z,
+    CONTROL_ANGL_Z,
     CONTROL_COLOR_R,
     CONTROL_COLOR_G,
     CONTROL_COLOR_B,

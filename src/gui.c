@@ -30,10 +30,10 @@ int8_t _draw_state(Object *obj, uint16_t offset) {
         .height = INPUT_HEIGHT
     };
 
-    // TODO: selection
     int8_t selection = (int8_t)NO_SELECTION;
     DRAW_VEC3(obj, field, position);
-    // if(IS_PRESSED((Rectangle){}))
+    for(uint8_t i = 0; i < 3; i++)
+        if(IS_PRESSED(((Rectangle){STATE_PAD_X + (field.width + 3*STATE_PAD_X) * i, field.y - STATE_PAD_Y - field.height, INPUT_WIDTH, INPUT_HEIGHT}))) selection = i;
     DRAW_VEC3(obj, field, size);
     DRAW_VEC3(obj, field, rotation);
     DRAW_SINGLE_INPUT(obj, field, radius);
