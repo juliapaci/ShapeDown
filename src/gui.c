@@ -11,13 +11,18 @@ bool _rect_contains(Rectangle rect, Vector2 pos) {
 
 int16_t draw_gui(DA *objects, int16_t selection) {
     DrawRectangle(0, 0, SIDEBAR_WIDTH, GetScreenHeight(), PRIMARY_COLOUR);
-    if(selection != NO_SELECTION)
-        _draw_state(&objects->array[selection], (selection + 1) * (BUTTON_PAD_Y + BUTTON_HEIGHT) + BUTTON_PAD_Y);
-    return _draw_list(objects->amount, selection);
+    int16_t selected = _draw_list(objects->amount, selection);
+    if(selection != NO_SELECTION) {
+        int16_t state = _draw_state(&objects->array[selection], (selection + 1) * (BUTTON_PAD_Y + BUTTON_HEIGHT) + BUTTON_PAD_Y);
+        if(state != NO_SELECTION)
+            selected = objects->amount + state;
+    }
+
+    return selected;
 }
 
 // TODO: could reflect everything to use appropriate draw calls for each type and layout
-void _draw_state(Object *obj, uint16_t offset) {
+int8_t _draw_state(Object *obj, uint16_t offset) {
     Rectangle field = {
         .x = STATE_PAD_X,
         .y = offset + STATE_PAD_Y,
@@ -25,7 +30,10 @@ void _draw_state(Object *obj, uint16_t offset) {
         .height = INPUT_HEIGHT
     };
 
+    // TODO: selection
+    int8_t selection = (int8_t)NO_SELECTION;
     DRAW_VEC3(obj, field, position);
+    // if(IS_PRESSED((Rectangle){}))
     DRAW_VEC3(obj, field, size);
     DRAW_VEC3(obj, field, rotation);
     DRAW_SINGLE_INPUT(obj, field, radius);
@@ -42,6 +50,8 @@ void _draw_state(Object *obj, uint16_t offset) {
 
     DRAW_TRI_CHECKBOX(obj, checkbox, mirror);
     DRAW_CHECKBOX(obj, checkbox, subtract);
+
+    return selection;
 }
 
 int16_t _draw_list(uint16_t amount, int16_t selection) {

@@ -14,6 +14,8 @@ enum Axis {
 
 #define RING_RADIUS 2
 
+#define DEBUG_PRINT_OBJECT(obj) printf("position: (%f, %f, %f)\nsize: (%f, %f, %f)\nrotation: (%f, %f, %f)\nradius: %f\nblobbyness: %f\ncolour: (%d, %d, %d)\nmirror: (%b, %b, %b)\nsubtract: %b\n", (obj).position.x, (obj).position.y, (obj).position.z, (obj).size.x, (obj).size.y, (obj).size.z, (obj).rotation.x, (obj).rotation.y, (obj).rotation.z, (obj).radius, (obj).blobbyness, (obj).colour.r, (obj).colour.g, (obj).colour.b, (obj).mirror.x, (obj).mirror.y, (obj).mirror.z, (obj).subtract);
+
 typedef struct {
     Vector3 position;
     Vector3 size;

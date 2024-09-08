@@ -11,8 +11,7 @@
     rect.y += rect.height + STATE_PAD_Y
 
 // TODO: should advance by string len and have just one generic advance macro
-// TODO: should "->" be hardcoded?
-// TODO: could just find "->" and truncate string for name instead of `obj` param
+// TODO: could find "->" and truncate string for name instead of `obj` param but it would have a runtime cost
 #define ADVANCE_INPUT(rect) rect.x += rect.width + 3*STATE_PAD_X
 #define CONCLUDE_STATE(rect)            \
     rect.y += STATE_PAD_Y + rect.height;\
@@ -89,8 +88,10 @@
 // is pos inside rect?
 bool _rect_contains(Rectangle rect, Vector2 pos);
 
+// returns selected shape id or
 int16_t draw_gui(DA *objects, int16_t selection);
-void _draw_state(Object *obj, uint16_t offset);
+// returns clicked state fields, NO_SELECTION on none
+int8_t _draw_state(Object *obj, uint16_t offset);
 // returns selected id. NO_SELECTION on none clicked
 int16_t _draw_list(uint16_t amount, int16_t seleciton);
 

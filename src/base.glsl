@@ -8,6 +8,60 @@ vec4 Min(vec4 a, vec4 b) {
     return (a.x<b.x) ? a : b;
 }
 
+// symmetry stuff copied from shape up
+vec3 opSymX(vec3 p) {
+    p.x = abs(p.x);
+    return p;
+}
+vec3 opSymY(vec3 p) {
+    p.y = abs(p.y);
+    return p;
+}
+vec3 opSymZ(vec3 p) {
+    p.z = abs(p.z);
+    return p;
+}
+vec3 opSymXY(vec3 p) {
+    p.xy = abs(p.xy);
+    return p;
+}
+vec3 opSymXZ(vec3 p) {
+    p.xz = abs(p.xz);
+    return p;
+}
+vec3 opSymYZ(vec3 p) {
+    p.yz = abs(p.yz);
+    return p;
+}
+vec3 opSymXYZ(vec3 p) {
+    p.xyz = abs(p.xyz);
+    return p;
+}
+vec3 opRotateXYZ(vec3 p, vec3 theta) {
+    float cz = cos(theta.z);
+    float sz = sin(theta.z);
+    float cy = cos(theta.y);
+    float sy = sin(theta.y);
+    float cx = cos(theta.x);
+    float sx = sin(theta.x);
+
+    mat3 mat = mat3(
+        cz*cy,
+        cz*sy*sx - cx*sz,
+        sz*sx + cz*cx*sy,
+
+        cy*sz,
+        cz*cx + sz*sy*sx,
+        cx*sz*sy - cz*sx,
+
+        -sy,
+        cy*sx,
+        cy*cx
+    );
+
+    return mat*p;
+}
+
 // marches a ray in direction until hit
 // NOTE: expects a normalized direction
 vec4 ray_march(vec3 origin, vec3 direction) {

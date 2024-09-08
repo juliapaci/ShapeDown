@@ -32,7 +32,6 @@ int main(void) {
     };
     DA objects;
     DA_init(&objects, 50);
-    // TODO: first object is invisible?
     DynShader shader = object_map(&objects, NO_SELECTION, false);
 
     // TODO: a state struct which contains selected, object da, etc.
@@ -87,7 +86,7 @@ int main(void) {
             // gui hud
             int16_t clicked = draw_gui(&objects, selected);
             if(clicked != NO_SELECTION)
-                set_selected(&objects, &selected, &shader, &selected_object, clicked);
+                set_selected(&objects, &selected, &shader, &selected_object, clicked < objects.amount ? clicked :clicked - objects.amount);
 
             if(IsCursorHidden())
                 DrawCircle(GetScreenWidth()/2.0, GetScreenHeight()/2.0, 5.0, RAYWHITE);

@@ -107,6 +107,22 @@ Vector3 nearest_point_sphere(Vector3 p, Vector3 c, float r) {
     return Vector3Add(c, Vector3Scale(dir, r));
 }
 
+const char *mirror_function(Object *obj) {
+    const char *const symmetry[8] = {
+        "",
+        "opSymX",
+        "opSymY",
+        "opSymXY",
+        "opSymZ",
+        "opSymXZ",
+        "opSymYZ",
+        "opSymXYZ"
+    };
+
+    const uint16_t mirror_index = (obj->mirror.z << 2) | (obj->mirror.y << 1) | obj->mirror.x;
+    return symmetry[mirror_index];
+}
+
 void object_dynamic_assignment(DynShader *shader, Object *obj) {
     const float properties[3*5] = {
         obj->position.x,
@@ -148,39 +164,42 @@ void object_dynamic_assignment(DynShader *shader, Object *obj) {
 }
 
 const char *object_static_map_entry(Object *obj, int16_t index) {
-    const char *position = TextFormat("point - vec3(%f, %f, %f)", obj->position.x, obj->position.y, obj->position.z);
-    const char *size = TextFormat("vec3(%f, %f, %f)", fabs(obj->size.x), fabs(obj->size.y), fabs(obj->size.z));
+    const char *const position = TextFormat("%s(point) - vec3(%f, %f, %f)", mirror_function(obj), obj->position.x, obj->position.y, obj->position.z);
+    const char *const size = TextFormat("vec3(%f, %f, %f)", fabs(obj->size.x), fabs(obj->size.y), fabs(obj->size.z));
+    const char *const rotation = TextFormat("vec3(%f, %f, %f)", obj->rotation.x, obj->rotation.y, obj->rotation.z);
 
-    double r, g, b;
+    uint8_t r, g, b;
     if(index == -1) {
-        r = obj->colour.r/255.0;
-        g = obj->colour.g/255.0;
-        b = obj->colour.b/255.0;
+        r = obj->colour.r;
+        g = obj->colour.g;
+        b = obj->colour.b;
     } else {
         // TODO: could also use another buffer like depth or something
-        r = index/255.0;
-        g = fmax(index - 255, 0)/255.0;
-        b = fmax(index - 255*2, 0)/255.0;
+        r = index;
+        g = fmax(index - 255, 0);
+        b = fmax(index - 255*2, 0);
     }
+    // const char *const colour = TextFormat("\n\t\tvec3(%f, %f, %f)", r/255.0, g/255.0, b/255.0);
+    const char *const colour = "vec3(0, 0,0)";
 
-    const char *colour = TextFormat("\n\t\tvec3(%f, %f, %f)", r, g, b);
-
-    const char *block = TextFormat("\tdistance = Min(\n\t\tvec4(%s, %s),\n\t\tdistance);\n",
-            TextFormat("sdf_round_box(\n\t\t\t%s,\n\t\t\t%s,\n\t\t\t%f)", position, size, obj->radius),
-            colour);
+    const char *const block = TextFormat("\tdistance = Min(\n\t\tvec4(%s, %s),\n\t\tdistance);\n",
+        TextFormat("sdf_round_box(\n\t\t\topRotateXYZ(%s, %s), \n\t\t\t%s,\n\t\t\t%f)", position, rotation, size, obj->radius),
+        colour
+    );
 
     return block;
 }
 
 const char *object_dynamic_map_entry(Object *obj) {
-    const char *position = "point - object_props[0]";
-    const char *size = "object_props[1]";
-    const char *colour = "object_props[3]";
+    const char *const position = "point - object_props[0]";
+    const char *const size = "object_props[1]";
+    const char *const colour = "object_props[3]";
 
     // TODO: radius should be from object_props
-    const char *block = TextFormat("\tdistance = Min(\n\t\tvec4(%s, %s),\n\t\tdistance);\n",
-            TextFormat("sdf_round_box(\n\t\t\t%s,\n\t\t\t%s,\n\t\t\t%f)", position, size, obj->radius),
-            colour);
+    const char *const block = TextFormat("\tdistance = Min(\n\t\tvec4(%s, %s),\n\t\tdistance);\n",
+        TextFormat("sdf_round_box(\n\t\t\t%s,\n\t\t\t%s,\n\t\t\t%f)", position, size, obj->radius),
+        colour
+    );
 
     return block;
 }
@@ -188,12 +207,12 @@ const char *object_dynamic_map_entry(Object *obj) {
 DynShader object_map(DA *da, int16_t selection, bool colour_index) {
     char *map = NULL;
 
-    char *prelude = _read_file("src/shader.glsl");
-    char *base = _read_file("src/base.glsl");
-    const char *sig = "\nvec4 map(vec3);\n";
-    const char *map_start = "vec4 map(vec3 point) {\n" // vec4 (distance, colour)
+    const char *const prelude = _read_file("src/shader.glsl");
+    const char *const base = _read_file("src/base.glsl");
+    const char *const sig = "\nvec4 map(vec3);\n";
+    const char *const map_start = "vec4 map(vec3 point) {\n" // vec4 (distance, colour)
         "\tvec4 distance = vec4(MAX_RAY_DIST, vec3(0));\n";
-    const char *map_end = "\treturn distance;\n"
+    const char *const map_end = "\treturn distance;\n"
         "}\0";
 
     _append(&map, prelude);
@@ -203,10 +222,10 @@ DynShader object_map(DA *da, int16_t selection, bool colour_index) {
     for(uint16_t i = 0; i < da->amount; i++) {
         const char *entry = NULL;
 
-        if(i != selection)
-            entry = object_static_map_entry(da->array + i, colour_index * (i + 1) - 1);
-        else
+        if(i == selection)
             entry = object_dynamic_map_entry(da->array + i);
+        else
+            entry = object_static_map_entry(da->array + i, colour_index * (i + 1) - 1);
 
         _append(&map, entry);
     }
