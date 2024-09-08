@@ -5,6 +5,8 @@
 #include <raylib.h>
 
 #define IS_PRESSED(rect) (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && _rect_contains(rect, GetMousePosition()))
+// TODO: labels offset the rect
+#define STATE_SELECTION(rect, obj, m) if(IS_PRESSED(rect)) selection = (uint8_t *)&m - (uint8_t *)obj
 
 #define DRAW_TITLE(rect, label)                                     \
     DrawText(label, rect.x, rect.y, STATE_TEXT_SIZE, ACCENT_COLOUR);\
@@ -20,15 +22,19 @@
 #define DRAW_SINGLE_INPUT(obj, rect, data)  \
     DRAW_TITLE(rect, #data);                \
     _draw_input(rect, #data, obj->data);    \
+    STATE_SELECTION(rect, obj, obj->data);  \
     CONCLUDE_STATE(rect)
 
 #define DRAW_STRUCT_3(obj, rect, struct, f1, f2, f3) \
     DRAW_TITLE(rect, #struct);              \
     _draw_input(rect, #f1, obj->struct.f1); \
+    STATE_SELECTION(rect, obj, obj->struct.f1);\
     ADVANCE_INPUT(rect);                    \
     _draw_input(rect, #f2, obj->struct.f2); \
+    STATE_SELECTION(rect, obj, obj->struct.f2);\
     ADVANCE_INPUT(rect);                    \
     _draw_input(rect, #f3, obj->struct.f3); \
+    STATE_SELECTION(rect, obj, obj->struct.f3);\
     CONCLUDE_STATE(rect)
 
 #define DRAW_VEC3(obj, rect, vec3) DRAW_STRUCT_3(obj, rect, vec3, x, y, z)

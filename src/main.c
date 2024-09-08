@@ -72,10 +72,10 @@ int main(void) {
             if(mouse_control.kind && mpos.x > SIDEBAR_WIDTH)
                 apply_manipulation(&mouse_control, selected_object, GetMouseRay(mpos, camera));
             else if(state_control) {
-                const uint8_t variant = (state_control - 1) % 3;
-                const uint8_t kind = floor((state_control - 1) / 3.0 - (FLT_MIN * (variant != 0)));
-                // *((uint8_t *)selected_object + ((kind <= 2) ? state_control * sizeof(float) : 0)) += GetMouseDelta().x;
-                selected_object->position.x += GetMouseDelta().x / 100.0;
+                if(state_control <= 44)
+                    *((float *)selected_object + state_control/sizeof(float)) += GetMouseDelta().x / 100.0;
+                else // colour
+                    *((uint8_t *)selected_object + state_control) += GetMouseDelta().x / 100.0;
             }
         }
 
