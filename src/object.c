@@ -7,7 +7,7 @@
 #include <string.h>
 #include <float.h>
 
-Object DEFAULT_OBJECT = {0, .size = (Vector3){1.0, 1.0, 1.0}};
+Object DEFAULT_OBJECT = {.size = (Vector3){1.0, 1.0, 1.0}};
 
 void DA_init(DA *da, uint16_t size) {
     da->array = malloc(size * sizeof(Object));
@@ -16,15 +16,15 @@ void DA_init(DA *da, uint16_t size) {
 }
 
 void DA_push(DA *da, Object *obj) {
-    if(da->amount == 255*3)
+    if(da->amount >= 255*3)
         return;
 
-    if(++da->amount >= da->capacity) {
+    if(da->amount >= da->capacity) {
         da->capacity += da->amount;
         da->array = realloc(da->array, da->capacity * sizeof(Object));
     }
 
-    da->array[da->amount] = *obj;
+    da->array[da->amount++] = *obj;
 }
 
 void DA_remove(DA *da, uint16_t index) {
@@ -123,9 +123,9 @@ void draw_gizmos(Object *obj) {
 
 #define TOUCH_CONTROL_ROT(axis, rs) else if(                            \
         rs.hit &&                                                       \
-            axis == X ? fabs(rs.normal.z) < 0.1                         \
-            : axis == Y ? fabs(rs.normal.x) < 0.1                       \
-            : fabs(rs.normal.y) < 0.1                                   \
+            axis == X ? fabs(rs.normal.z) < 0.01                        \
+            : axis == Y ? fabs(rs.normal.x) < 0.01                      \
+            : fabs(rs.normal.y) < 0.01                                  \
         ) {                                                             \
     control.kind = CONTROL_ANGLE_X + axis;                              \
                                                                         \
