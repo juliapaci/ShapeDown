@@ -62,7 +62,8 @@ int main(void) {
 
             if(!mouse_control.kind)
                 set_selected(&objects, &selected, &shader, &selected_object, object_at_pos(&objects, mpos, &camera));
-        }
+        } else if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
+            mouse_control.kind = CONTROL_NONE;
 
         if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && mouse_control.kind && mpos.x > SIDEBAR_WIDTH)
             apply_manipulation(&mouse_control, selected_object, GetMouseRay(mpos, camera));
@@ -80,7 +81,7 @@ int main(void) {
 
             BeginMode3D(camera);
                 if(selected != NO_SELECTION)
-                    draw_gizmos(selected_object);
+                    draw_gizmos(selected_object, mouse_control);
             EndMode3D();
 
             // gui hud

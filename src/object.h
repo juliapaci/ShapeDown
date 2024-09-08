@@ -95,7 +95,7 @@ void update_shader_uniforms(DynShader *shader, Camera *camera);
 // `DynShader.shader.id == 0` on no keybind
 DynShader action_keybinds(DA *da, int16_t selection);
 // draws object gizmos
-void draw_gizmos(Object *obj);
+void draw_gizmos(Object *obj, struct Control control);
 // returns the users object manipulation
 struct Control control(Object *obj, Ray ray);
 // apply control to the object

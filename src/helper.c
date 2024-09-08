@@ -152,6 +152,7 @@ void object_dynamic_assignment(DynShader *shader, Object *obj) {
         ),
         fmaxf(obj->blobbyness, 0.0001),
         0.0f
+        // TODO: maybe could save mirror isntead of paddying for dynamicnessness
     };
 
     SetShaderValueV(
@@ -179,25 +180,27 @@ const char *object_static_map_entry(Object *obj, int16_t index) {
         g = fmax(index - 255, 0);
         b = fmax(index - 255*2, 0);
     }
+    // TODO: this breaks `position` pointer for some reason???
     // const char *const colour = TextFormat("\n\t\tvec3(%f, %f, %f)", r/255.0, g/255.0, b/255.0);
-    const char *const colour = "vec3(0, 0,0)";
 
-    const char *const block = TextFormat("\tdistance = Min(\n\t\tvec4(%s, %s),\n\t\tdistance);\n",
-        TextFormat("sdf_round_box(\n\t\t\topRotateXYZ(%s, %s), \n\t\t\t%s,\n\t\t\t%f)", position, rotation, size, obj->radius),
-        colour
+    const char *const block = TextFormat("\tdistance = Min(vec4(%s, vec3(%f, %f, %f)), distance);",
+        TextFormat("sdf_round_box(opRotateXYZ(%s, %s), %s, %f)", position, rotation, size, obj->radius),
+        // colour
+        r/255.0, g/255.0, b/255.0
     );
 
     return block;
 }
 
 const char *object_dynamic_map_entry(Object *obj) {
-    const char *const position = "point - object_props[0]";
+    const char *const position = TextFormat("%s(point) - object_props[0]", mirror_function(obj));
     const char *const size = "object_props[1]";
+    const char *const rotation = "object_props[2]";
     const char *const colour = "object_props[3]";
+    const char *const radius = "object_props[4].x";
 
-    // TODO: radius should be from object_props
-    const char *const block = TextFormat("\tdistance = Min(\n\t\tvec4(%s, %s),\n\t\tdistance);\n",
-        TextFormat("sdf_round_box(\n\t\t\t%s,\n\t\t\t%s,\n\t\t\t%f)", position, size, obj->radius),
+    const char *const block = TextFormat("distance = Min(vec4(%s, %s),distance);",
+        TextFormat("sdf_round_box(opRotateXYZ(%s, %s), %s, %f)", position, rotation, size, radius),
         colour
     );
 

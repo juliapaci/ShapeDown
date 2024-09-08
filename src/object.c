@@ -69,17 +69,25 @@ void update_shader_uniforms(DynShader *shader, Camera *camera) {
 
 #define DRAW_ROT_CONTROL(axis, pos) DrawCircle3D(pos, RING_RADIUS, (Vector3){1.0 * (axis == Z), 1.0 * (axis == Y), 0.0}, (axis != X) * 90.0, TYPE_OR_ZERO_COLOUR(axis))
 
-void draw_gizmos(Object *obj) {
+void draw_gizmos(Object *obj, struct Control control) {
     const Vector3 pos = obj->position;
     const Vector3 size = obj->size;
 
     // TODO: axes
 
-    for(uint8_t axis = 0; axis < 3; axis++) {
-        DRAW_POS_CONTROL(axis, pos);
-        DRAW_SIZE_CONTROL(axis, pos, size);
-        DRAW_ROT_CONTROL(axis,  pos);
-    }
+    if(control.kind == CONTROL_NONE)
+        for(uint8_t axis = 0; axis < 3; axis++) {
+            DRAW_POS_CONTROL(axis, pos);
+            DRAW_SIZE_CONTROL(axis, pos, size);
+            DRAW_ROT_CONTROL(axis,  pos);
+        }
+    else
+        for(uint8_t axis = 0; axis < 3; axis++) {
+            if(false) {}
+            else if(control.kind == CONTROL_POS_X + axis) {DRAW_POS_CONTROL(axis, pos);}
+            else if(control.kind == CONTROL_SCALE_X + axis) {DRAW_SIZE_CONTROL(axis, pos, size);}
+            else if(control.kind == CONTROL_ANGLE_X + axis) {DRAW_ROT_CONTROL(axis, pos);}
+        }
 }
 
 // type = `Axis` (0 - x, 1 - y, 2 - z)
@@ -160,8 +168,10 @@ void apply_manipulation(struct Control *control, Object *obj, Ray ray) {
     const Vector3 pos = obj->position;
 
     const uint8_t variant = (control->kind - 1) % 3;
-    const Vector3 nearest = /* variant ==  */NEAREST_POINT_LINE(variant);
-    Vector3 *const target = (Vector3 *const)((Vector3 *const)obj + (size_t)floor((control->kind - 1) / 3.0 - (FLT_MIN * (variant != 0))));
+    const uint8_t kind = floor((control->kind - 1) / 3.0 - (FLT_MIN * (variant != 0)));
+    // TODO: rotation control
+    const Vector3 nearest = /* kind == 2 ? nearest_point_sphere(ray.position, pos, RING_RADIUS) : */ NEAREST_POINT_LINE(variant);
+    Vector3 *const target = (Vector3 *const)((Vector3 *const)obj + kind);
 
     *(float *const)((float *const)target + variant) = control->adjustment + *(float *const)((float *const)&nearest + variant);
 }
