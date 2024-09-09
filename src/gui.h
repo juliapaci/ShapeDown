@@ -6,12 +6,11 @@
 
 #define IS_PRESSED(rect) (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && _rect_contains(rect, GetMousePosition()))
 #define STATE_SELECTION(rect, obj, m)           \
-    rect.x += ADVANCE_LABEL(_string_split(#m, string_contains(#m, '.') ? '.' : '>'));\
+    rect.x += ADVANCE_LABEL(_string_split(#m, strchr(#m, '.') ? '.' : '>'));\
     if(IS_PRESSED(rect))                        \
     selection = (uint8_t *)&m - (uint8_t *)obj; \
-    rect.x -= ADVANCE_LABEL(_string_split(#m, string_contains(#m, '.') ? '.' : '>'));
+    rect.x -= ADVANCE_LABEL(_string_split(#m, strchr(#m, '.') ? '.' : '>'));
 
-#include <stdio.h>
 #define ADVANCE_LABEL(label) (strlen(label) != 1) * MeasureTextEx(GetFontDefault(), label, INPUT_TEXT_SIZE, 0).x + INPUT_LABEL_PAD;
 
 #define DRAW_TITLE(rect, label)                                     \
@@ -101,8 +100,6 @@
 bool _rect_contains(Rectangle rect, Vector2 pos);
 // second substr seperated by `delim`
 const char *_string_split(char *string, char delim);
-// `string` contains `c`?
-bool string_contains(char *string, char c);
 
 // returns selected shape id or
 int16_t draw_gui(DA *objects, int16_t selection);

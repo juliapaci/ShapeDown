@@ -23,13 +23,6 @@ const char *_string_split(char *string, char delim) {
     return string;
 }
 
-bool string_contains(char *string, char c) {
-    for(size_t i = 0; i < strlen(string); i++)
-        if(string[i] == c)
-            return true;
-    return false;
-}
-
 int16_t draw_gui(DA *objects, int16_t selection) {
     DrawRectangle(0, 0, SIDEBAR_WIDTH, GetScreenHeight(), PRIMARY_COLOUR);
     int16_t selected = _draw_list(objects->amount, selection);

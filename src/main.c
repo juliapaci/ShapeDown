@@ -1,7 +1,6 @@
 #include <raylib.h>
 #include <raymath.h>
 #include <string.h>
-#include <float.h>
 
 #include <stdio.h>
 
@@ -76,7 +75,19 @@ int main(void) {
                 if(state_control <= 44)
                     *((float *)selected_object + state_control/sizeof(float)) += GetMouseDelta().x / 100.0;
                 else // colour
-                    *((uint8_t *)selected_object + state_control) += GetMouseDelta().x / 100.0;
+                    *((uint8_t *)selected_object + state_control) += GetMouseDelta().x / 100;
+
+                // wrap mouse
+                const Vector2 delta = GetMouseDelta();
+
+                if(mpos.x <= 0 + 2 && delta.x < 0) mpos.x = GetScreenWidth();
+                else if(mpos.x >= GetScreenWidth() - 2 && delta.x > 0) mpos.x = 0;
+
+                if(mpos.y <= 0 + 2 && delta.y < 0) mpos.y = GetScreenHeight();
+                else if(mpos.y >= GetScreenHeight() - 2 && delta.y > 0) mpos.y = 0;
+
+                if(!Vector2Equals(mpos, GetMousePosition()))
+                    SetMousePosition(mpos.x, mpos.y);
             }
         }
 

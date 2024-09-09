@@ -8,6 +8,27 @@ vec4 Min(vec4 a, vec4 b) {
     return (a.x<b.x) ? a : b;
 }
 
+// TODO: intersection?
+// combination sdf stuff copied from shape up
+vec4 opSmoothUnionSteppedColor(vec4 a, vec4 b, float blend) {
+    float h =  max( blend-abs(a.x-b.x), 0.0 )/blend;
+    float m = h*h*0.5;
+    float s = m*blend*(1.0/2.0);
+    return (a.x<b.x) ? vec4(a.x-s,a.gba) : vec4(b.x-s,b.gba);
+}
+
+vec4 opSmoothUnion(vec4 a, vec4 b, float blend) {
+    float h =  max( blend-abs(a.x-b.x), 0.0 )/blend;
+    float m = h*h*0.5;
+    float s = m*blend*(1.0/2.0);
+    return (a.x<b.x) ? vec4(a.x-s,mix(a.gba,b.gba,m)) : vec4(b.x-s,mix(a.gba,b.gba,1.0-m));
+}
+
+vec4 opSmoothSubtraction(vec4 d1, vec4 d2, float k) {
+    float dist = opSmoothUnion(d1,vec4(-d2.x, d2.gba),k).x;
+    return vec4(-dist, d2.gba);
+}
+
 // symmetry stuff copied from shape up
 vec3 opSymX(vec3 p) {
     p.x = abs(p.x);
