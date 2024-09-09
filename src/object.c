@@ -179,6 +179,7 @@ void apply_manipulation(struct Control *control, Object *obj, Ray ray) {
 DynShader action_keybinds(DA *da, int16_t selection) {
     Object obj = DEFAULT_OBJECT;
 
+    // TODO: escape resets seleciton to NO_SELECTION
     if(IsKeyPressed(KEY_SPACE))
         return add_object(da, &obj, selection);
     else if(IsKeyPressed(KEY_X))

@@ -5,8 +5,14 @@
 #include <raylib.h>
 
 #define IS_PRESSED(rect) (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && _rect_contains(rect, GetMousePosition()))
-// TODO: labels offset the rect
-#define STATE_SELECTION(rect, obj, m) if(IS_PRESSED(rect)) selection = (uint8_t *)&m - (uint8_t *)obj
+#define STATE_SELECTION(rect, obj, m)           \
+    rect.x += ADVANCE_LABEL(_string_split(#m, string_contains(#m, '.') ? '.' : '>'));\
+    if(IS_PRESSED(rect))                        \
+    selection = (uint8_t *)&m - (uint8_t *)obj; \
+    rect.x -= ADVANCE_LABEL(_string_split(#m, string_contains(#m, '.') ? '.' : '>'));
+
+#include <stdio.h>
+#define ADVANCE_LABEL(label) (strlen(label) != 1) * MeasureTextEx(GetFontDefault(), label, INPUT_TEXT_SIZE, 0).x + INPUT_LABEL_PAD;
 
 #define DRAW_TITLE(rect, label)                                     \
     DrawText(label, rect.x, rect.y, STATE_TEXT_SIZE, ACCENT_COLOUR);\
@@ -93,6 +99,10 @@
 
 // is pos inside rect?
 bool _rect_contains(Rectangle rect, Vector2 pos);
+// second substr seperated by `delim`
+const char *_string_split(char *string, char delim);
+// `string` contains `c`?
+bool string_contains(char *string, char c);
 
 // returns selected shape id or
 int16_t draw_gui(DA *objects, int16_t selection);

@@ -18,8 +18,9 @@ void set_selected(DA *objects, int16_t *selected, DynShader *shader, Object **se
 }
 
 int main(void) {
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     SetTraceLogLevel(LOG_ERROR);
+    SetExitKey(KEY_NULL);
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(800, 400, "ShapeDown");
     SetTargetFPS(60);
 

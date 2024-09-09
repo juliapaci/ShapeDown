@@ -9,6 +9,27 @@ bool _rect_contains(Rectangle rect, Vector2 pos) {
         && rect.y <= pos.y && rect.y + rect.height >= pos.y;
 }
 
+const char *_string_split(char *string, char delim) {
+    for(size_t i = 0; i < strlen(string); i++) {
+        if(string[i] == delim) {
+            const size_t length = strlen(string) - i;
+            char *substr = malloc(length*sizeof(char) + 1);
+            memcpy(substr, &string[i+1], length*sizeof(char));
+            substr[length] = '\0';
+            return substr;
+        }
+    }
+
+    return string;
+}
+
+bool string_contains(char *string, char c) {
+    for(size_t i = 0; i < strlen(string); i++)
+        if(string[i] == c)
+            return true;
+    return false;
+}
+
 int16_t draw_gui(DA *objects, int16_t selection) {
     DrawRectangle(0, 0, SIDEBAR_WIDTH, GetScreenHeight(), PRIMARY_COLOUR);
     int16_t selected = _draw_list(objects->amount, selection);
@@ -80,7 +101,7 @@ bool _draw_button(Rectangle rect, const char *label) {
 
 bool _draw_checkbox(Rectangle rect, const char *label, bool checked) {
     DrawText(label, rect.x + TEXT_PAD_X, rect.y, CHECKBOX_TEXT_SIZE, ACCENT_COLOUR);
-    rect.x += (strlen(label) != 1) * MeasureTextEx(GetFontDefault(), label, INPUT_TEXT_SIZE, 0).x + INPUT_LABEL_PAD;
+    rect.x += ADVANCE_LABEL(label);
 
     if(checked)
         DrawRectangleRec(rect, ACCENT_COLOUR);
@@ -91,8 +112,7 @@ bool _draw_checkbox(Rectangle rect, const char *label, bool checked) {
 
 bool _draw_input(Rectangle rect, const char *label, float value) {
     DrawText(label, rect.x, rect.y, INPUT_TEXT_SIZE, ACCENT_COLOUR);
-    rect.x += (strlen(label) != 1) * MeasureTextEx(GetFontDefault(), label, INPUT_TEXT_SIZE, 0).x + INPUT_LABEL_PAD;
-
+    rect.x += ADVANCE_LABEL(label);
     DrawRectangleRec(rect, ACCENT_COLOUR);
     DrawText(TextFormat("%" INPUT_PRECISION "f", value), rect.x + TEXT_PAD_X, rect.y + TEXT_PAD_Y, INPUT_TEXT_SIZE, PRIMARY_COLOUR);
 
