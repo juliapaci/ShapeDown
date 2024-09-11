@@ -2,17 +2,25 @@
 #include "nob.h"
 
 #define CFLAGS "-Wall", "-Wextra", "-ggdb"
-#define LFLAGS "-I./include/raylib-5.0_linux_amd64/include",\
-    "-L./include/raylib-5.0_linux_amd64/lib", "-lraylib",   \
-    "-Wl,-rpath=./include/raylib-5.0_linux_amd64/lib",      \
+#define LDFLAGS "-I./include/raylib/src",   \
+    "-L./include/raylib/src", "-lraylib",   \
+    "-Wl,-rpath=./include/raylib/src",      \
     "-lm"
 
-// TODO: build deps (raylib)?
+void build_raylib(void) {
+    Cstr cwd = GETCWD();
+    SETCWD(PATH(cwd, "include", "raylib", "src"));
+
+    CMD("make", "PLATFORM=PLATFORM_DESKTOP");
+
+    SETCWD(cwd);
+}
 
 int main(int argc, char *argv[]) {
     GO_REBUILD_URSELF(argc, argv);
 
-    CMD("cc", CFLAGS, LFLAGS, "-o", "ShapeDown", "src/main.c", "src/object.c", "src/helper.c", "src/gui.c");
+    build_raylib();
+    CMD("cc", CFLAGS, "-o", "ShapeDown", "src/main.c", "src/object.c", "src/helper.c", "src/gui.c", LDFLAGS);
 
     return 0;
 }

@@ -169,8 +169,7 @@ const char *object_static_map_entry(Object *obj, int16_t index) {
     const char *const size = TextFormat("vec3(%f, %f, %f)", fabs(obj->size.x), fabs(obj->size.y), fabs(obj->size.z));
     const char *const rotation = TextFormat("vec3(%f, %f, %f)", obj->rotation.x, obj->rotation.y, obj->rotation.z);
     const char *const func = obj->subtract ? "opSmoothSubtraction" : ((index == -1) ? (obj->blobbyness > 0.0 ? "opSmoothUnion" : "Min") : "opSmoothUnionStepColor");
-    const char *op_arg = (!obj->subtract && index == -1 && obj->blobbyness == 0.0) ? "" : TextFormat(", %f", obj->blobbyness);
-        // strcmp(func, "Min") == 0 ? TextFormat(", %f", obj->blobbyness) : ""
+    const char *const op_arg = (!obj->subtract && index == -1 && obj->blobbyness == 0.0) ? "" : TextFormat(", %f", obj->blobbyness);
 
     uint8_t r, g, b;
     if(index == -1) {
@@ -183,14 +182,15 @@ const char *object_static_map_entry(Object *obj, int16_t index) {
         g = fmaxf(index - 255, 0);
         b = fmaxf(index - 255*2, 0);
     }
-    const char *const colour = TextFormat("\n\t\tvec3(%f, %f, %f)", r/255.0, g/255.0, b/255.0);
+    const char *const colour = TextFormat("vec3(%f, %f, %f)", r/255.0, g/255.0, b/255.0);
 
-    const char *const block = TextFormat("\tdistance = %s(vec4(%s, vec3(%f, %f, %f)), distance %s);",
+    const char *const block = TextFormat("distance = %s(vec4(%s, %s), distance %s);",
         func,
         TextFormat("sdf_round_box(opRotateXYZ(%s, %s), %s, %f)", position, rotation, size, obj->radius),
         colour,
         op_arg
     );
+
     printf("%s\n", block);
 
     return block;
