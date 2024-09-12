@@ -1,3 +1,4 @@
 [submodule "include/raylib"]
 	path = include/raylib
-	url = git@github.com:raysan5/raylib.git
+	url = git@github.com:aymey/raylib.git
+    branch = "big-buffer"
