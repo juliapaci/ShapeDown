@@ -168,7 +168,7 @@ const char *object_static_map_entry(Object *obj, int16_t index) {
     const char *const position = TextFormat("%s(point) - vec3(%f, %f, %f)", mirror_function(obj), obj->position.x, obj->position.y, obj->position.z);
     const char *const size = TextFormat("vec3(%f, %f, %f)", fabs(obj->size.x), fabs(obj->size.y), fabs(obj->size.z));
     const char *const rotation = TextFormat("vec3(%f, %f, %f)", obj->rotation.x, obj->rotation.y, obj->rotation.z);
-    const char *const func = obj->subtract ? "opSmoothSubtraction" : ((index == -1) ? (obj->blobbyness > 0.0 ? "opSmoothUnion" : "Min") : "opSmoothUnionStepColor");
+    const char *const func = obj->subtract ? "opSmoothSubtraction" : ((index == -1) ? (obj->blobbyness > 0.0 ? "opSmoothUnion" : "Min") : "opSmoothUnionSteppedColor");
     const char *const op_arg = (!obj->subtract && index == -1 && obj->blobbyness == 0.0) ? "" : TextFormat(", %f", obj->blobbyness);
 
     uint8_t r, g, b;
@@ -190,8 +190,6 @@ const char *object_static_map_entry(Object *obj, int16_t index) {
         colour,
         op_arg
     );
-
-    printf("%s\n", block);
 
     return block;
 }
