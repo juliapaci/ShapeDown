@@ -41,6 +41,7 @@ int main(void) {
     struct Control mouse_control = {0};
     ControlKind state_control = CONTROL_NONE;
 
+    bool enable_gizmos = true;
     while(!WindowShouldClose()) {
         Vector2 mpos = IsCursorHidden() ?
             (Vector2){GetScreenWidth()/2.0, GetScreenHeight()/2.0} :
@@ -57,9 +58,11 @@ int main(void) {
         DynShader tmp_shader = action_keybinds(&objects, selected);
         if(tmp_shader.shader.id != 0)
             shader = tmp_shader;
+        if(IsKeyPressed(KEY_H))
+            enable_gizmos = !enable_gizmos;
 
         if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mpos.x > SIDEBAR_WIDTH) {
-            if(selected != NO_SELECTION)
+            if(selected != NO_SELECTION && enable_gizmos)
                 mouse_control = control(selected_object, GetMouseRay(mpos, camera));
 
             if(!mouse_control.kind)
@@ -72,6 +75,7 @@ int main(void) {
             if(mouse_control.kind && mpos.x > SIDEBAR_WIDTH)
                 apply_manipulation(&mouse_control, selected_object, GetMouseRay(mpos, camera));
             else if(state_control) {
+                // TODO: different ratio for range
                 if(state_control <= 44)
                     *((float *)selected_object + state_control/sizeof(float)) += GetMouseDelta().x / 100.0;
                 else // colour
@@ -103,7 +107,7 @@ int main(void) {
             EndShaderMode();
 
             BeginMode3D(camera);
-                if(selected != NO_SELECTION)
+                if(selected != NO_SELECTION && enable_gizmos)
                     draw_gizmos(selected_object, mouse_control);
             EndMode3D();
 

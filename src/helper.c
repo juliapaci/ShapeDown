@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <float.h>
 
 char *_read_file(const char *file_path) {
     FILE *file = fopen(file_path, "rb");
@@ -143,14 +144,14 @@ void object_dynamic_assignment(DynShader *shader, Object *obj) {
         obj->colour.b / 255.0f,
 
         // radius, blobbyness, padding
-        fmaxf(0.01,
+        fmaxf(FLT_MIN,
             fminf(obj->radius,
                 fminf(obj->size.x,
                     fminf(obj->size.y, obj->size.z)
                 )
             )
         ),
-        fmaxf(obj->blobbyness, 0.0001),
+        fmaxf(obj->blobbyness, FLT_MIN),
         0.0f
         // TODO: maybe could save mirror isntead of paddying for dynamicnessness
     };
@@ -204,7 +205,7 @@ const char *object_dynamic_map_entry(Object *obj) {
 
     const char *const block = TextFormat("distance = %s(vec4(%s, %s), distance, %s);",
         obj->subtract ? "opSmoothSubtraction" : "opSmoothUnion",
-        TextFormat("sdf_round_box(opRotateXYZ(%s, %s), %s, %f)", position, rotation, size, radius),
+        TextFormat("sdf_round_box(opRotateXYZ(%s, %s), %s, %s)", position, rotation, size, radius),
         colour,
         blobbyness
     );
