@@ -124,6 +124,17 @@ const char *mirror_function(Object *obj) {
     return symmetry[mirror_index];
 }
 
+float obj_radius(Object *obj) {
+    return
+        fmaxf(FLT_MIN,
+            fminf(obj->radius,
+                fminf(obj->size.x,
+                    fminf(obj->size.y, obj->size.z)
+                )
+            )
+        );
+}
+
 void object_dynamic_assignment(DynShader *shader, Object *obj) {
     const float properties[3*5] = {
         obj->position.x,
@@ -144,13 +155,7 @@ void object_dynamic_assignment(DynShader *shader, Object *obj) {
         obj->colour.b / 255.0f,
 
         // radius, blobbyness, padding
-        fmaxf(FLT_MIN,
-            fminf(obj->radius,
-                fminf(obj->size.x,
-                    fminf(obj->size.y, obj->size.z)
-                )
-            )
-        ),
+        obj_radius(obj),
         fmaxf(obj->blobbyness, FLT_MIN),
         0.0f
         // TODO: maybe could save mirror isntead of paddying for dynamicnessness
@@ -187,7 +192,7 @@ const char *object_static_map_entry(Object *obj, int16_t index) {
 
     const char *const block = TextFormat("distance = %s(vec4(%s, %s), distance %s);",
         func,
-        TextFormat("sdf_round_box(opRotateXYZ(%s, %s), %s, %f)", position, rotation, size, obj->radius),
+        TextFormat("sdf_round_box(opRotateXYZ(%s, %s), %s, %f)", position, rotation, size, obj_radius(obj)),
         colour,
         op_arg
     );
@@ -218,10 +223,10 @@ DynShader object_map(DA *da, int16_t selection, bool colour_index) {
 
     const char *const prelude = _read_file("src/shader.glsl");
     const char *const base = _read_file("src/base.glsl");
-    const char *const sig = "\nvec4 map(vec3);\n";
-    const char *const map_start = "vec4 map(vec3 point) {\n" // vec4 (distance, colour)
-        "\tvec4 distance = vec4(MAX_RAY_DIST, vec3(0));\n";
-    const char *const map_end = "\treturn distance;\n"
+    const char *const sig = "vec4 map(vec3);";
+    const char *const map_start = "vec4 map(vec3 point) {" // vec4 (distance, colour)
+        "vec4 distance = vec4(MAX_RAY_DIST, vec3(0));";
+    const char *const map_end = "return distance;"
         "}\0";
 
     _append(&map, prelude);

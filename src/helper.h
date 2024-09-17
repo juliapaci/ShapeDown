@@ -26,6 +26,8 @@ Vector3 NearestPointOnLine(
 // Find the nearest point on sphere
 Vector3 nearest_point_sphere(Vector3 p, Vector3 c, float r);
 
+// radius of object
+float obj_radius(Object *obj);
 // gets mirror function for object
 const char *mirror_function(Object *obj);
 // sets the dynamic selection uniform to selected objects properties

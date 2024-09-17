@@ -17,10 +17,10 @@ void set_selected(DA *objects, int16_t *selected, DynShader *shader, Object **se
 }
 
 int main(void) {
-    // SetTraceLogLevel(LOG_ERROR);
-    // SetExitKey(KEY_NULL);
+    SetTraceLogLevel(LOG_ERROR);
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(800, 400, "ShapeDown");
+    SetExitKey(KEY_NULL);
     SetTargetFPS(60);
 
     // TODO: fix camera beinga bit offset (for gizmos) (might be a shader camera ray offset)
