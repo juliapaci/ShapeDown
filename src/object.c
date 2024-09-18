@@ -69,13 +69,13 @@ void update_shader_uniforms(DynShader *shader, Camera *camera) {
 
 #define DRAW_ROT_CONTROL(axis, pos) DrawCircle3D(pos, RING_RADIUS, (Vector3){1.0 * (axis == Z), 1.0 * (axis == Y), 0.0}, (axis != X) * 90.0, TYPE_OR_ZERO_COLOUR(axis))
 
-void draw_gizmos(Object *obj, struct Control control) {
+void draw_gizmos(Object *obj, ControlKind control) {
     const Vector3 pos = obj->position;
     const Vector3 size = obj->size;
 
     // TODO: axes
 
-    if(control.kind == CONTROL_NONE)
+    if(control == CONTROL_NONE)
         for(uint8_t axis = 0; axis < 3; axis++) {
             DRAW_POS_CONTROL(axis, pos);
             DRAW_SIZE_CONTROL(axis, pos, size);
@@ -84,9 +84,9 @@ void draw_gizmos(Object *obj, struct Control control) {
     else
         for(uint8_t axis = 0; axis < 3; axis++) {
             if(false) {}
-            else if(control.kind == CONTROL_POS_X + axis) {DRAW_POS_CONTROL(axis, pos);}
-            else if(control.kind == CONTROL_SCALE_X + axis) {DRAW_SIZE_CONTROL(axis, pos, size);}
-            else if(control.kind == CONTROL_ANGLE_X + axis) {DRAW_ROT_CONTROL(axis, pos);}
+            else if(control == CONTROL_POS_X + axis) {DRAW_POS_CONTROL(axis, pos);}
+            else if(control == CONTROL_SCALE_X + axis) {DRAW_SIZE_CONTROL(axis, pos, size);}
+            else if(control == CONTROL_ANGLE_X + axis) {DRAW_ROT_CONTROL(axis, pos);}
         }
 }
 

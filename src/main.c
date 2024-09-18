@@ -107,8 +107,8 @@ int main(void) {
             EndShaderMode();
 
             BeginMode3D(camera);
-                if(selected != NO_SELECTION && enable_gizmos)
-                    draw_gizmos(selected_object, mouse_control);
+                if(selected != NO_SELECTION && state_control <= 36 && enable_gizmos)
+                    draw_gizmos(selected_object, mouse_control.kind ? mouse_control.kind : STATE_TO_CONTROL(state_control));
             EndMode3D();
 
             // gui hud
