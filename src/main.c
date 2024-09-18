@@ -78,7 +78,7 @@ int main(void) {
                 // TODO: different ratio for range
                 if(state_control <= 44)
                     *((float *)selected_object + state_control/sizeof(float)) += GetMouseDelta().x / 100.0;
-                else // colour
+                else if(state_control <= 44 + 3) // colour
                     *((uint8_t *)selected_object + state_control) += GetMouseDelta().x / 100;
 
                 // wrap mouse
@@ -116,8 +116,14 @@ int main(void) {
             if(clicked != NO_SELECTION) {
                 if(clicked < objects.amount)
                     set_selected(&objects, &selected, &shader, &selected_object, clicked);
-                else
+                else {
                     state_control = (clicked - objects.amount) + 1;
+
+                    if(state_control >= 47) {  // flags (mirror, subtract)
+                        shader = object_map(&objects, selected, false);
+                        state_control = 0;
+                    }
+                }
             }
 
             if(IsCursorHidden())

@@ -49,14 +49,18 @@
 #define ADVANCE_CHECKBOX(rect) rect.x += rect.width + INPUT_PAD_X
 #define DRAW_CHECKBOX(obj, rect, data)  \
     DRAW_TITLE(rect, #data);            \
-    CHECKBOX(rect, #data, obj->data);
+    CHECKBOX(rect, #data, obj->data);   \
+    STATE_SELECTION(rect, obj, obj->data);
 #define DRAW_TRI_CHECKBOX(obj, rect, data)  \
     DRAW_TITLE(rect, #data);                \
     CHECKBOX(rect, "x", obj->data.x);       \
+    STATE_SELECTION(rect, obj, obj->data.x);\
     ADVANCE_CHECKBOX(rect);                 \
     CHECKBOX(rect, "y", obj->data.y);       \
+    STATE_SELECTION(rect, obj, obj->data.y);\
     ADVANCE_CHECKBOX(rect);                 \
     CHECKBOX(rect, "z", obj->data.z);       \
+    STATE_SELECTION(rect, obj, obj->data.z);\
     ADVANCE_CHECKBOX(rect);                 \
     CONCLUDE_STATE(rect)
 

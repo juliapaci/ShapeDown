@@ -158,7 +158,7 @@ void object_dynamic_assignment(DynShader *shader, Object *obj) {
         obj_radius(obj),
         fmaxf(obj->blobbyness, FLT_MIN),
         0.0f
-        // TODO: maybe could save mirror isntead of paddying for dynamicnessness
+        // TODO: maybe could save padded mirror and subtract bools isntead of paddying for dynamicnessness
     };
 
     SetShaderValueV(
