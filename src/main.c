@@ -17,7 +17,7 @@ void set_selected(DA *objects, int16_t *selected, DynShader *shader, Object **se
 }
 
 int main(void) {
-    SetTraceLogLevel(LOG_ERROR);
+    // SetTraceLogLevel(LOG_ERROR);
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(800, 400, "ShapeDown");
     SetExitKey(KEY_NULL);
