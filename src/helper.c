@@ -218,7 +218,26 @@ const char *object_dynamic_map_entry(Object *obj) {
     return block;
 }
 
+struct TaggedObject {
+    Object obj;
+    uint16_t tag;
+};
+
+int subtraction_cmp(const void *a, const void *b) {
+    const bool f = ((struct TaggedObject *)a)->obj.subtract;
+    const bool s = ((struct TaggedObject *)b)->obj.subtract;
+    if(f && !s) return 1;
+    if(!f && s) return -1;
+    return 0;
+}
+
 DynShader object_map(DA *da, int16_t selection, bool colour_index) {
+    // objects sorted with respect to `subtract`
+    struct TaggedObject *objects = malloc(da->amount * sizeof(struct TaggedObject));
+    for(uint16_t i = 0; i < da->amount; i++)
+        objects[i] = (struct TaggedObject){.obj = da->array[i], .tag = i};
+    qsort(objects, da->amount, sizeof(struct TaggedObject), subtraction_cmp);
+
     char *map = NULL;
 
     const char *const prelude = _read_file("src/shader.glsl");
@@ -234,12 +253,13 @@ DynShader object_map(DA *da, int16_t selection, bool colour_index) {
     _append(&map, base);
     _append(&map, map_start);
     for(uint16_t i = 0; i < da->amount; i++) {
+        const uint16_t id = objects[i].tag;
         const char *entry = NULL;
 
-        if(i == selection)
-            entry = object_dynamic_map_entry(da->array + i);
+        if(id == selection)
+            entry = object_dynamic_map_entry(&objects[i].obj);
         else
-            entry = object_static_map_entry(da->array + i, colour_index * (i + 1) - 1);
+            entry = object_static_map_entry(&objects[i].obj, colour_index * (id + 1) - 1);
 
         _append(&map, entry);
     }
@@ -253,6 +273,7 @@ DynShader object_map(DA *da, int16_t selection, bool colour_index) {
         .object_props = GetShaderLocation(shader.shader, "object_props")
     };
 
+    free(objects);
     return shader;
 }
 
