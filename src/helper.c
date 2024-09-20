@@ -240,8 +240,9 @@ DynShader object_map(DA *da, int16_t selection, bool colour_index) {
 
     char *map = NULL;
 
-    const char *const prelude = _read_file("src/shader.glsl");
-    const char *const base = _read_file("src/base.glsl");
+    const char *const prelude = _read_file("src/prelude.glsl");
+    const char *const helper = _read_file("src/helper.glsl");
+    const char *const base = colour_index ? _read_file("src/selection.glsl") : _read_file("src/base.glsl");
     const char *const sig = "vec4 map(vec3);";
     const char *const map_start = "vec4 map(vec3 point) {" // vec4 (distance, colour)
         "vec4 distance = vec4(MAX_RAY_DIST, vec3(0));";
@@ -250,6 +251,7 @@ DynShader object_map(DA *da, int16_t selection, bool colour_index) {
 
     _append(&map, prelude);
     _append(&map, sig);
+    _append(&map, helper);
     _append(&map, base);
     _append(&map, map_start);
     for(uint16_t i = 0; i < da->amount; i++) {
@@ -259,7 +261,7 @@ DynShader object_map(DA *da, int16_t selection, bool colour_index) {
         if(id == selection)
             entry = object_dynamic_map_entry(&objects[i].obj);
         else
-            entry = object_static_map_entry(&objects[i].obj, colour_index * (id + 1) - 1);
+            entry = object_static_map_entry(&objects[i].obj, colour_index * (id + 2) - 1);
 
         _append(&map, entry);
     }
@@ -308,7 +310,7 @@ int16_t object_at_pos(DA *objects, Vector2 pos, Camera *camera) {
     const uint8_t r = pixels[index];
     const uint8_t g = pixels[index + 1];
     const uint8_t b = pixels[index + 2];
-    const int16_t object_id = r + g + b;
+    const int16_t object_id = r + g + b - 1;
 
     free(pixels);
     UnloadRenderTexture(target);

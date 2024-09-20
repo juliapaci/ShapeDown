@@ -65,8 +65,11 @@ int main(void) {
             if(selected != NO_SELECTION && enable_gizmos)
                 mouse_control = control(selected_object, GetMouseRay(mpos, camera));
 
-            if(!mouse_control.kind)
-                set_selected(&objects, &selected, &shader, &selected_object, object_at_pos(&objects, mpos, &camera));
+            if(!mouse_control.kind) {
+                const int16_t selection = object_at_pos(&objects, mpos, &camera);
+                if(selection != NO_SELECTION)
+                    set_selected(&objects, &selected, &shader, &selected_object, selection);
+            }
         } else if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
             mouse_control.kind = CONTROL_NONE;
             state_control = CONTROL_NONE;
@@ -136,6 +139,7 @@ int main(void) {
     }
 
     DA_free(&objects);
+    UnloadShader(shader.shader);
     CloseWindow();
     return 0;
 }

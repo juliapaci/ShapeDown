@@ -39,7 +39,7 @@ int16_t draw_gui(DA *objects, int16_t selection) {
 int8_t _draw_state(Object *obj, uint16_t offset) {
     Rectangle field = {
         .x = STATE_PAD_X,
-        .y = offset + STATE_PAD_Y,
+        .y = offset,
         .width = INPUT_WIDTH,
         .height = INPUT_HEIGHT
     };
