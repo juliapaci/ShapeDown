@@ -55,10 +55,16 @@ void DA_free(DA *da);
 typedef struct {
     Shader shader;
     // locations
-    int resolution;
-    int view_center;
-    int view_eye;
-    int object_props;
+    union {
+        struct {
+            int resolution;
+            int view_center;
+            int view_eye;
+            int object_props;
+        };
+
+        int z_slice; // for slice see marching cubes
+    };
 } DynShader;
 
 typedef enum {

@@ -128,8 +128,8 @@ float obj_radius(Object *obj) {
     return
         fmaxf(FLT_MIN,
             fminf(obj->radius,
-                fminf(obj->size.x,
-                    fminf(obj->size.y, obj->size.z)
+                fminf(fabsf(obj->size.x),
+                    fminf(fabsf(obj->size.y), fabsf(obj->size.z))
                 )
             )
         );
@@ -240,9 +240,9 @@ DynShader object_map(DA *da, int16_t selection, bool colour_index) {
 
     char *map = NULL;
 
-    const char *const prelude = _read_file("src/prelude.glsl");
-    const char *const helper = _read_file("src/helper.glsl");
-    const char *const base = colour_index ? _read_file("src/selection.glsl") : _read_file("src/base.glsl");
+    const char *const prelude = _read_file("src/shaders/prelude.glsl");
+    const char *const helper = _read_file("src/shaders/helper.glsl");
+    const char *const base = colour_index ? _read_file("src/shaders/selection.glsl") : _read_file("src/shaders/base.glsl");
     const char *const sig = "vec4 map(vec3);";
     const char *const map_start = "vec4 map(vec3 point) {" // vec4 (distance, colour)
         "vec4 distance = vec4(MAX_RAY_DIST, vec3(0));";
@@ -272,7 +272,8 @@ DynShader object_map(DA *da, int16_t selection, bool colour_index) {
         .resolution   = GetShaderLocation(shader.shader, "resolution"),
         .view_eye     = GetShaderLocation(shader.shader, "view_eye"),
         .view_center  = GetShaderLocation(shader.shader, "view_center"),
-        .object_props = GetShaderLocation(shader.shader, "object_props")
+        // TODO: probably can just use resolution or something as z_slice instead of another uniform
+        .object_props = GetShaderLocation(shader.shader, shader.resolution != -1 ? "object_props" : "z_slice") // overwrite z_slice because of the union
     };
 
     free(objects);
@@ -315,4 +316,8 @@ int16_t object_at_pos(DA *objects, Vector2 pos, Camera *camera) {
     free(pixels);
     UnloadRenderTexture(target);
     return object_id;
+}
+
+void march_cubes(DA *da) {
+    DynShader shader = object_map(da, NO_SELECTION, false);
 }

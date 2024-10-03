@@ -42,4 +42,8 @@ DynShader object_map(DA *da, int16_t selection, bool colour_index);
 // index (colour) of pixel at `pos`
 int16_t object_at_pos(DA *objects, Vector2 pos, Camera *camera);
 
+// export to obj using marching cubes
+// TODO: do in compute shader
+void march_cubes(DA *da);
+
 #endif // __HELPER_H__

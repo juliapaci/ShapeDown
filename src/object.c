@@ -84,9 +84,9 @@ void draw_gizmos(Object *obj, ControlKind control) {
     else
         for(uint8_t axis = 0; axis < 3; axis++) {
             if(false) {}
-            else if(control == CONTROL_POS_X + axis) {DRAW_POS_CONTROL(axis, pos);}
-            else if(control == CONTROL_SCALE_X + axis) {DRAW_SIZE_CONTROL(axis, pos, size);}
-            else if(control == CONTROL_ANGLE_X + axis) {DRAW_ROT_CONTROL(axis, pos);}
+            else if(control == CONTROL_POS_X + (ControlKind)axis) {DRAW_POS_CONTROL(axis, pos);}
+            else if(control == CONTROL_SCALE_X + (ControlKind)axis) {DRAW_SIZE_CONTROL(axis, pos, size);}
+            else if(control == CONTROL_ANGLE_X + (ControlKind)axis) {DRAW_ROT_CONTROL(axis, pos);}
         }
 }
 
