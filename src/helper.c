@@ -272,7 +272,6 @@ DynShader object_map(DA *da, int16_t selection, bool colour_index) {
         .resolution   = GetShaderLocation(shader.shader, "resolution"),
         .view_eye     = GetShaderLocation(shader.shader, "view_eye"),
         .view_center  = GetShaderLocation(shader.shader, "view_center"),
-        // TODO: probably can just use resolution or something as z_slice instead of another uniform
         .object_props = GetShaderLocation(shader.shader, shader.resolution != -1 ? "object_props" : "z_slice") // overwrite z_slice because of the union
     };
 
@@ -318,6 +317,39 @@ int16_t object_at_pos(DA *objects, Vector2 pos, Camera *camera) {
     return object_id;
 }
 
+// https://paulbourke.net/geometry/polygonise/
 void march_cubes(DA *da) {
     DynShader shader = object_map(da, NO_SELECTION, false);
+
+    BoundingBox model = {
+        .min = (Vector3){FLT_MAX, FLT_MAX, FLT_MAX},
+        .max = (Vector3){FLT_MIN, FLT_MIN, FLT_MIN},
+    };
+
+    for(uint16_t i = 0; i < da->amount; i++) {
+        const float radius = 0; // not sure what this is?
+        const Vector3 position = da->array[i].position;
+
+        model = (BoundingBox){
+            .min = Vector3Min(model.min, Vector3SubtractValue(position, radius)),
+            .max = Vector3Max(model.max, Vector3AddValue(position, radius))
+        };
+    }
+
+    // bounds should encompass all cubes with padding
+    Vector3SubtractValue(model.min, 1.0);
+    Vector3AddValue(model.max, 1.0);
+
+    const Vector3 range = Vector3Subtract(model.max, model.min);
+    Vector3 slice = Vector3AddValue(Vector3Scale(range, 1./CUBE_RESOLUTION), 0.5);
+    const Vector3 step = Vector3Divide(range, slice);
+    slice = (Vector3){
+        slice.x = (int)slice.x + 1,
+        slice.y = (int)slice.y + 1,
+        slice.z = (int)slice.z + 1,
+    };
+
+    int8_t *buffer = malloc(400000000); // TODO: calculate in relation to bounds
+
+    // RenderTexture2D slices[2] = {LoadFloatRenderTexture(slice.x, slice.y)}
 }

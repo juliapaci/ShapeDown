@@ -11,6 +11,9 @@
 #define SELECTED_OBJ(obj) (obj != NO_OBJECT)
 #define SELECTED(id, obj) (SELECTED_ID(id) && SELECTED_OBJ(obj))
 
+// for marching cubes
+#define CUBE_RESOLUTION 0.03
+
 void _append(char **str1, const char *str2);
 char *_read_file(const char *file_path);
 

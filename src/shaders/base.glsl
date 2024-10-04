@@ -1,3 +1,7 @@
+uniform vec3 view_eye;
+uniform vec3 view_center;
+uniform vec2 resolution;
+
 // https://iquilezles.org/articles/rmshadows/
 float calcSoftshadow(in vec3 ro, in vec3 rd, float mint, float maxt, float w) {
     float res = 1.0;

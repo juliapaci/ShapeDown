@@ -41,8 +41,8 @@ extern Object DEFAULT_OBJECT;
 
 // Dynamic Array
 typedef struct {
-    size_t amount;
-    size_t capacity;
+    uint16_t amount;
+    uint16_t capacity;
     Object *array;
 } DA;
 
