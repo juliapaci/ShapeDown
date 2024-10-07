@@ -73,16 +73,17 @@ int main(void) {
         } else if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
             mouse_control.kind = CONTROL_NONE;
             state_control = CONTROL_NONE;
-        }
-        if(IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+        } if(IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
             if(mouse_control.kind && mpos.x > SIDEBAR_WIDTH)
                 apply_manipulation(&mouse_control, selected_object, GetMouseRay(mpos, camera));
             else if(state_control) {
                 // TODO: different ratio for range
-                if(state_control <= 44)
+                state_control--;
+                if(state_control < 44)
                     *((float *)selected_object + state_control/sizeof(float)) += GetMouseDelta().x / 100.0;
                 else if(state_control <= 44 + 3) // colour
-                    *((uint8_t *)selected_object + state_control) += GetMouseDelta().x / 100;
+                    *((uint8_t *)selected_object + (uint8_t)state_control) += (uint8_t)GetMouseDelta().x;
+                state_control++;
 
                 // wrap mouse
                 const Vector2 delta = GetMouseDelta();
@@ -122,7 +123,7 @@ int main(void) {
                 else {
                     state_control = (clicked - objects.amount) + 1;
 
-                    if(state_control >= 47) {  // flags (mirror, subtract)
+                    if(state_control > 47) {  // flags (mirror, subtract)
                         shader = object_map(&objects, selected, false);
                         state_control = 0;
                     }

@@ -29,8 +29,6 @@ Vector3 NearestPointOnLine(
 // Find the nearest point on sphere
 Vector3 nearest_point_sphere(Vector3 p, Vector3 c, float r);
 
-// radius of object
-float obj_radius(Object *obj);
 // gets mirror function for object
 const char *mirror_function(Object *obj);
 // sets the dynamic selection uniform to selected objects properties
@@ -48,5 +46,6 @@ int16_t object_at_pos(DA *objects, Vector2 pos, Camera *camera);
 // export to obj using marching cubes
 // TODO: do in compute shader
 void march_cubes(DA *da);
+float scalar_field(Vector3 pos);
 
 #endif // __HELPER_H__

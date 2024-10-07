@@ -24,10 +24,16 @@ const char *_string_split(char *string, char delim) {
 }
 
 int16_t draw_gui(DA *objects, int16_t selection) {
+    // background
     DrawRectangle(0, 0, SIDEBAR_WIDTH, GetScreenHeight(), PRIMARY_COLOUR);
+    // export button
+    if(_draw_button((Rectangle){STATE_PAD_X, STATE_PAD_Y, BUTTON_WIDTH, BUTTON_HEIGHT}, "export")) march_cubes(objects);
+    DrawRectangle(STATE_PAD_X, 2*STATE_PAD_Y + BUTTON_HEIGHT, SIDEBAR_WIDTH - 2*STATE_PAD_X, 10, ACCENT_COLOUR);
+    // list
     int16_t selected = _draw_list(objects->amount, selection);
     if(selection != NO_SELECTION) {
-        int16_t state = _draw_state(&objects->array[selection], (selection + 1) * (BUTTON_PAD_Y + BUTTON_HEIGHT) + BUTTON_PAD_Y);
+        // properties
+        int16_t state = _draw_state(&objects->array[selection], (selection + 1) * (BUTTON_PAD_Y + BUTTON_HEIGHT) + 7*BUTTON_PAD_Y);
         if(state != NO_SELECTION)
             selected = objects->amount + state;
     }
@@ -71,7 +77,7 @@ int16_t _draw_list(uint16_t amount, int16_t selection) {
 
     Rectangle rect = {
         .x = BUTTON_PAD_X,
-        .y = BUTTON_PAD_Y,
+        .y = 7*BUTTON_PAD_Y,
         .width = BUTTON_WIDTH,
         .height = BUTTON_HEIGHT
     };

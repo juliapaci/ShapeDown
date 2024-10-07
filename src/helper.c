@@ -124,8 +124,9 @@ const char *mirror_function(Object *obj) {
     return symmetry[mirror_index];
 }
 
-float obj_radius(Object *obj) {
-    return
+void object_dynamic_assignment(DynShader *shader, Object *obj) {
+    // obj->blobbyness = fmaxf(obj->blobbyness, FLT_MIN);
+    obj->radius =
         fmaxf(FLT_MIN,
             fminf(obj->radius,
                 fminf(fabsf(obj->size.x),
@@ -133,9 +134,8 @@ float obj_radius(Object *obj) {
                 )
             )
         );
-}
+    obj->blobbyness = fabs(obj->blobbyness);
 
-void object_dynamic_assignment(DynShader *shader, Object *obj) {
     const float properties[3*5] = {
         obj->position.x,
         obj->position.y,
@@ -155,7 +155,7 @@ void object_dynamic_assignment(DynShader *shader, Object *obj) {
         obj->colour.b / 255.0f,
 
         // radius, blobbyness, padding
-        obj_radius(obj),
+        obj->radius,
         fmaxf(obj->blobbyness, FLT_MIN),
         0.0f
         // TODO: maybe could save padded mirror and subtract bools isntead of paddying for dynamicnessness
@@ -192,7 +192,7 @@ const char *object_static_map_entry(Object *obj, int16_t index) {
 
     const char *const block = TextFormat("distance = %s(vec4(%s, %s), distance %s);",
         func,
-        TextFormat("sdf_round_box(opRotateXYZ(%s, %s), %s, %f)", position, rotation, size, obj_radius(obj)),
+        TextFormat("sdf_round_box(opRotateXYZ(%s, %s), %s, %f)", position, rotation, size, obj->radius),
         colour,
         op_arg
     );
@@ -232,6 +232,7 @@ int subtraction_cmp(const void *a, const void *b) {
 }
 
 DynShader object_map(DA *da, int16_t selection, bool colour_index) {
+    // TODO: also have to fix blobyness order?
     // objects sorted with respect to `subtract`
     struct TaggedObject *objects = malloc(da->amount * sizeof(struct TaggedObject));
     for(uint16_t i = 0; i < da->amount; i++)
@@ -352,4 +353,8 @@ void march_cubes(DA *da) {
     int8_t *buffer = malloc(400000000); // TODO: calculate in relation to bounds
 
     // RenderTexture2D slices[2] = {LoadFloatRenderTexture(slice.x, slice.y)}
+}
+
+float scalar_field(Vector3 pos) {
+
 }
