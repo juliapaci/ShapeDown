@@ -3,10 +3,13 @@
 #include <string.h>
 
 #include <stdio.h>
+#include <stddef.h>
 
 #include "object.h"
 #include "helper.h"
 #include "gui.h"
+
+#define WRAP_PADDING 2
 
 // TODO: could just keep delta selected in ev loop instead
 void set_selected(DA *objects, int16_t *selected, DynShader *shader, Object **selected_object, int16_t selection) {
@@ -29,7 +32,7 @@ int main(void) {
         .target     = (Vector3) {0.0f, 0.0f, 0.0f},
         .up         = (Vector3) {0.0f, 1.0f, 0.0f},
         .fovy       = 45.0f,
-        .projection = CAMERA_PERSPECTIVE
+        .projection = CAMERA_PERSPECTIVE,
     };
     DA objects;
     DA_init(&objects, 50);
@@ -79,20 +82,20 @@ int main(void) {
             else if(state_control) {
                 // TODO: different ratio for range
                 state_control--;
-                if(state_control < 44)
+                if(state_control < offsetof(Object, colour))
                     *((float *)selected_object + state_control/sizeof(float)) += GetMouseDelta().x / 100.0;
-                else if(state_control <= 44 + 3) // colour
+                else if(state_control <= offsetof(Object, mirror))
                     *((uint8_t *)selected_object + (uint8_t)state_control) += (uint8_t)GetMouseDelta().x;
                 state_control++;
 
                 // wrap mouse
                 const Vector2 delta = GetMouseDelta();
 
-                if(mpos.x <= 0 + 2 && delta.x < 0) mpos.x = GetScreenWidth();
-                else if(mpos.x >= GetScreenWidth() - 2 && delta.x > 0) mpos.x = 0;
+                if(mpos.x <= 0 + WRAP_PADDING && delta.x < 0) mpos.x = GetScreenWidth();
+                else if(mpos.x >= GetScreenWidth() - WRAP_PADDING && delta.x > 0) mpos.x = 0;
 
-                if(mpos.y <= 0 + 2 && delta.y < 0) mpos.y = GetScreenHeight();
-                else if(mpos.y >= GetScreenHeight() - 2 && delta.y > 0) mpos.y = 0;
+                if(mpos.y <= 0 + WRAP_PADDING && delta.y < 0) mpos.y = GetScreenHeight();
+                else if(mpos.y >= GetScreenHeight() - WRAP_PADDING && delta.y > 0) mpos.y = 0;
 
                 if(!Vector2Equals(mpos, GetMousePosition()))
                     SetMousePosition(mpos.x, mpos.y);
@@ -123,7 +126,7 @@ int main(void) {
                 else {
                     state_control = (clicked - objects.amount) + 1;
 
-                    if(state_control > 47) {  // flags (mirror, subtract)
+                    if(state_control > offsetof(Object, mirror)) {  // flags (mirror, subtract)
                         shader = object_map(&objects, selected, false);
                         state_control = 0;
                     }

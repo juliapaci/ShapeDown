@@ -1,5 +1,6 @@
 #include "helper.h"
 
+#include <raylib.h>
 #include <raymath.h>
 #include <rlgl.h>
 #include <assert.h>
@@ -276,6 +277,7 @@ DynShader object_map(DA *da, int16_t selection, bool colour_index) {
         .object_props = GetShaderLocation(shader.shader, shader.resolution != -1 ? "object_props" : "z_slice") // overwrite z_slice because of the union
     };
 
+    free(map);
     free(objects);
     return shader;
 }
@@ -352,9 +354,41 @@ void march_cubes(DA *da) {
 
     int8_t *buffer = malloc(400000000); // TODO: calculate in relation to bounds
 
-    // RenderTexture2D slices[2] = {LoadFloatRenderTexture(slice.x, slice.y)}
-}
+    RenderTexture2D slices[2] = {
+        LoadColorRenderTexture(slice.x, slice.y),
+        LoadColorRenderTexture(slice.x, slice.y)
+    };
 
-float scalar_field(Vector3 pos) {
+    // scalar field
+    for(size_t z = 0; z < slice.z; z++) {
+        for(uint8_t side = 0; side < 2; side++) { // side of cube face
+            const float z_pos = model.min.z + step.z * (z + side);
+            SetShaderValue(shader.shader, shader.z_slice, &z_pos, SHADER_UNIFORM_FLOAT);
+
+            BeginTextureMode(slices[side]);
+                BeginShaderMode(shader.shader);
+                    rlBegin(RL_QUADS);
+                        rlTexCoord2f(model.max.x, model.min.y);
+                        rlVertex2f(0, 0);
+
+                        rlTexCoord2f(model.max.x, model.max.y);
+                        rlVertex2f(0, slice.y);
+
+                        rlTexCoord2f(model.min.x, model.max.y);
+                        rlVertex2f(slice.x, slice.y);
+
+                        rlTexCoord2f(model.min.x, model.min.y);
+                        rlVertex2f(slice.x, 0);
+                    rlEnd();
+                EndShaderMode();
+            EndTextureMode();
+        }
+    }
+
+    const float *const pixels[2] = {
+        rlReadTexturePixels(slices[0].id, slices[0].texture.width, slices[0].texture.height, slices[0].texture.format),
+        rlReadTexturePixels(slices[1].id, slices[1].texture.width, slices[1].texture.height, slices[1].texture.format)
+    };
+
 
 }

@@ -7,7 +7,7 @@
 #include <string.h>
 #include <float.h>
 
-Object DEFAULT_OBJECT = {.size = (Vector3){1.0, 1.0, 1.0}, .colour = {150, 150, 150}};
+Object DEFAULT_OBJECT = {.size = (Vector3){1.0, 1.0, 1.0}, .colour = {150, 150, 150}, 0};
 
 void DA_init(DA *da, uint16_t size) {
     da->array = malloc(size * sizeof(Object));

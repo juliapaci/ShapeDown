@@ -4,7 +4,7 @@
 #include "object.h"
 #include <raylib.h>
 
-#define STATE_TO_CONTROL(state) ((state != 0 && state <= 36) * (state/sizeof(float) + 1))
+#define STATE_TO_CONTROL(state) ((state != 0 && state <= offsetof(Object, radius)) * (state/sizeof(float) + 1))
 
 #define IS_PRESSED(rect) (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && _rect_contains(rect, GetMousePosition()))
 #define STATE_SELECTION(rect, obj, m)           \
