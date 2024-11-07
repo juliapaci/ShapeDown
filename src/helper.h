@@ -46,5 +46,6 @@ int16_t object_at_pos(DA *objects, Vector2 pos, Camera *camera);
 // export to obj using marching cubes
 // TODO: do in compute shader?
 void march_cubes(DA *da);
+Vector3 _interpolate_vertex(Vector4 a,Vector4 b, float threshold);
 
 #endif // __HELPER_H__

@@ -19,7 +19,6 @@ void build_raylib(void) {
 
 // NOTE: very bare bones just so clangd can pick up on stuff
 void create_compile_commands(void) {
-    CMD("touch", "compile_commands.json");
     FILE *json = fopen("compile_commands.json", "w");
 
     const char *ldflags_array[] = {LDFLAGS};
