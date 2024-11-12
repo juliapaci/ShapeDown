@@ -9,6 +9,8 @@
 #include <math.h>
 #include <float.h>
 
+#define SHADER_PATH "src/shaders/"
+
 char *_read_file(const char *file_path) {
     FILE *file = fopen(file_path, "rb");
     if(file == NULL)
@@ -230,7 +232,10 @@ int subtraction_cmp(const void *a, const void *b) {
     return 0;
 }
 
-DynShader object_map(DA *da, int16_t selection, bool colour_index) {
+DynShader object_map(DA *da, int16_t selection, uint8_t flags) {
+    bool colour_index = flags & 1;
+    bool marching_cubes = (flags & 2) >> 1;
+
     // TODO: also have to fix blobyness order?
     // objects sorted with respect to `subtract`
     struct TaggedObject *objects = malloc(da->amount * sizeof(struct TaggedObject));
@@ -240,9 +245,9 @@ DynShader object_map(DA *da, int16_t selection, bool colour_index) {
 
     char *map = NULL;
 
-    const char *const prelude = _read_file("src/shaders/prelude.glsl");
-    const char *const helper = _read_file("src/shaders/helper.glsl");
-    const char *const base = colour_index ? _read_file("src/shaders/selection.glsl") : _read_file("src/shaders/base.glsl");
+    const char *const prelude = _read_file(SHADER_PATH "prelude.glsl");
+    const char *const helper = _read_file(SHADER_PATH "helper.glsl");
+    const char *const base = _read_file(colour_index ? SHADER_PATH"selection.glsl" : (marching_cubes ? SHADER_PATH"slice.glsl" : SHADER_PATH"base.glsl"));
     const char *const sig = "vec4 map(vec3);";
     const char *const map_start = "vec4 map(vec3 point) {" // vec4 (distance, colour)
         "vec4 distance = vec4(MAX_RAY_DIST, vec3(0));";
@@ -268,12 +273,15 @@ DynShader object_map(DA *da, int16_t selection, bool colour_index) {
     _append(&map, map_end);
 
     DynShader shader = {
-        .shader       = LoadShaderFromMemory(NULL, map),
-        .resolution   = GetShaderLocation(shader.shader, "resolution"),
-        .view_eye     = GetShaderLocation(shader.shader, "view_eye"),
-        .view_center  = GetShaderLocation(shader.shader, "view_center"),
-        .object_props = GetShaderLocation(shader.shader, shader.resolution != -1 ? "object_props" : "z_slice") // overwrite z_slice because of the union
+        .shader         = LoadShaderFromMemory(NULL, map),
+        .resolution     = GetShaderLocation(shader.shader, "resolution"),
+        .view_eye       = GetShaderLocation(shader.shader, "view_eye"),
+        .view_center    = GetShaderLocation(shader.shader, "view_center"),
+        .object_props   = GetShaderLocation(shader.shader, "object_props")
     };
+    // overwrite z_slice because of the union
+    if(shader.resolution == -1)
+        shader.z_slice = GetShaderLocation(shader.shader, "z_slice");
 
     free(map);
     free(objects);
@@ -635,9 +643,9 @@ Vector3 _interpolate_vertex(Vector4 a,Vector4 b, float threshold) {
 void march_cubes(DA *da) {
     FILE *obj = fopen("model.obj", "w");
 
-    DynShader shader = object_map(da, NO_SELECTION, false);
+    DynShader shader = object_map(da, NO_SELECTION, 2);
 
-    BoundingBox model = {
+    BoundingBox bounds = {
         .min = (Vector3){FLT_MAX, FLT_MAX, FLT_MAX},
         .max = (Vector3){FLT_MIN, FLT_MIN, FLT_MIN},
     };
@@ -646,17 +654,17 @@ void march_cubes(DA *da) {
         const float radius = 0; // not sure what this is?
         const Vector3 position = da->array[i].position;
 
-        model = (BoundingBox){
-            .min = Vector3Min(model.min, Vector3SubtractValue(position, radius)),
-            .max = Vector3Max(model.max, Vector3AddValue(position, radius))
+        bounds = (BoundingBox){
+            .min = Vector3Min(bounds.min, Vector3SubtractValue(position, radius)),
+            .max = Vector3Max(bounds.max, Vector3AddValue(position, radius))
         };
     }
 
     // bounds should encompass all cubes with padding
-    Vector3SubtractValue(model.min, 1.0);
-    Vector3AddValue(model.max, 1.0);
+    bounds.min = Vector3SubtractValue(bounds.min, 1.0);
+    bounds.max = Vector3AddValue(bounds.max, 1.0);
 
-    const Vector3 range = Vector3Subtract(model.max, model.min);
+    const Vector3 range = Vector3Subtract(bounds.max, bounds.min);
     Vector3 slice = Vector3AddValue(Vector3Scale(range, 1./CUBE_RESOLUTION), 0.5);
     const Vector3 step = Vector3Divide(range, slice);
     slice = (Vector3){
@@ -673,24 +681,24 @@ void march_cubes(DA *da) {
     const uint8_t position_order[12*2] = { 0,1, 1,2, 2,3, 3,0, 4,5, 5,6, 6,7, 7,4, 0,4, 1,5, 2,6, 3,7 };
 
     // scalar field
-    for(size_t z = 0; z < slice.z; z++) {
+    for(size_t z = 0; z < slice.z - 1; z++) {
         for(uint8_t side = 0; side < 2; side++) { // side of cube face
-            const float z_pos = model.min.z + step.z * (z + side);
+            const float z_pos = bounds.min.z + step.z * (z + side);
             SetShaderValue(shader.shader, shader.z_slice, &z_pos, SHADER_UNIFORM_FLOAT);
 
             BeginTextureMode(slices[side]);
                 BeginShaderMode(shader.shader);
                     rlBegin(RL_QUADS);
-                        rlTexCoord2f(model.max.x, model.min.y);
+                        rlTexCoord2f(bounds.max.x, bounds.min.y);
                         rlVertex2f(0, 0);
 
-                        rlTexCoord2f(model.max.x, model.max.y);
+                        rlTexCoord2f(bounds.max.x, bounds.max.y);
                         rlVertex2f(0, slice.y);
 
-                        rlTexCoord2f(model.min.x, model.max.y);
+                        rlTexCoord2f(bounds.min.x, bounds.max.y);
                         rlVertex2f(slice.x, slice.y);
 
-                        rlTexCoord2f(model.min.x, model.min.y);
+                        rlTexCoord2f(bounds.min.x, bounds.min.y);
                         rlVertex2f(slice.x, 0);
                     rlEnd();
                 EndShaderMode();
@@ -702,8 +710,9 @@ void march_cubes(DA *da) {
             rlReadTexturePixels(slices[1].id, slices[1].texture.width, slices[1].texture.height, slices[1].texture.format)
         };
 
-        for(size_t y = 0; y < slice.y; y++) {
-            for(size_t x = 0; x < slice.x; x++) {
+
+        for(size_t y = 0; y < slice.y - 1; y++) {
+            for(size_t x = 0; x < slice.x - 1; x++) {
                 const float values[8] = {
                     pixels[0][(int)((x + 0) + (y + 0)*slice.x)],
                     pixels[0][(int)((x + 1) + (y + 0)*slice.x)],
@@ -723,9 +732,9 @@ void march_cubes(DA *da) {
                     continue;
 
                 const Vector4 origin = (Vector4) {
-                    model.min.x + x*step.x,
-                    model.min.y + y*step.y,
-                    model.min.z + z*step.z,
+                    bounds.min.x + x*step.x,
+                    bounds.min.y + y*step.y,
+                    bounds.min.z + z*step.z,
                     values[0]
                 };
 

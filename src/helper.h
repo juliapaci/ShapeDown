@@ -38,7 +38,8 @@ const char *object_static_map_entry(Object *obj, int16_t index);
 // append dynamnic (selected, uniform properties) object to shader ray march map
 const char *object_dynamic_map_entry(Object *obj);
 // create the entire (with all objects) object map
-DynShader object_map(DA *da, int16_t selection, bool colour_index);
+// `flags`: 2^0 = colour_index, 2^1 = marching_cubes
+DynShader object_map(DA *da, int16_t selection, uint8_t flags);
 
 // index (colour) of pixel at `pos`
 int16_t object_at_pos(DA *objects, Vector2 pos, Camera *camera);

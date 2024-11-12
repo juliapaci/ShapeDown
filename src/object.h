@@ -63,7 +63,7 @@ typedef struct {
             int object_props;
         };
 
-        int z_slice; // for slice see (marching cubes)
+        int z_slice;    // for slice see (marching cubes)
     };
 } DynShader;
 
